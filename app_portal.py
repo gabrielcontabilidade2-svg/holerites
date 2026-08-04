@@ -56,7 +56,7 @@ def limpar_numeros(texto: str) -> str:
 def formatar_moeda(valor: float) -> str:
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# --- GERADOR DE PDF DINÂMICO (NOVO LAYOUT) ---
+# --- GERADOR DE PDF DINÂMICO ---
 def gerar_pdf_holerite(dados_func):
     proventos_html = ""
     descontos_html = ""
@@ -240,37 +240,55 @@ else:
     descontos = sum(v["valor"] for v in descontos_list)
     liquido = proventos - descontos
 
-    st.markdown("---")
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # RENDERIZAÇÃO: PROVENTOS
-    st.markdown("### 🟢 Proventos")
-    for v in proventos_list:
-        c1, c2 = st.columns([4, 2])
-        c1.write(v['descricao'])
-        c2.markdown(f"<span style='color:green; font-weight: 500;'>+ {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align: right; font-weight: bold; color: green;'>Total Proventos: {formatar_moeda(proventos)}</div>", unsafe_allow_html=True)
+    # RENDERIZAÇÃO: PROVENTOS (Efeito Zebra)
+    st.markdown("### Proventos")
+    for i, v in enumerate(proventos_list):
+        bg_color = "rgba(128, 128, 128, 0.08)" if i % 2 == 0 else "transparent"
+        st.markdown(
+            f"<div style='background-color: {bg_color}; padding: 10px 12px; border-radius: 4px; display: flex; justify-content: space-between;'>"
+            f"<span>{v['descricao']}</span>"
+            f"<span>{formatar_moeda(v['valor'])}</span>"
+            f"</div>", 
+            unsafe_allow_html=True
+        )
+    st.markdown(
+        f"<div style='text-align: right; font-weight: bold; font-size: 1.15em; padding: 12px 12px 0 0;'>"
+        f"Total Proventos: {formatar_moeda(proventos)}</div>", 
+        unsafe_allow_html=True
+    )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # RENDERIZAÇÃO: DESCONTOS
-    st.markdown("### 🔴 Descontos")
-    for v in descontos_list:
-        c1, c2 = st.columns([4, 2])
-        c1.write(v['descricao'])
-        c2.markdown(f"<span style='color:red; font-weight: 500;'>- {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
-    st.markdown(f"<div style='text-align: right; font-weight: bold; color: red;'>Total Descontos: {formatar_moeda(descontos)}</div>", unsafe_allow_html=True)
+    # RENDERIZAÇÃO: DESCONTOS (Efeito Zebra)
+    st.markdown("### Descontos")
+    for i, v in enumerate(descontos_list):
+        bg_color = "rgba(128, 128, 128, 0.08)" if i % 2 == 0 else "transparent"
+        st.markdown(
+            f"<div style='background-color: {bg_color}; padding: 10px 12px; border-radius: 4px; display: flex; justify-content: space-between;'>"
+            f"<span>{v['descricao']}</span>"
+            f"<span>{formatar_moeda(v['valor'])}</span>"
+            f"</div>", 
+            unsafe_allow_html=True
+        )
+    st.markdown(
+        f"<div style='text-align: right; font-weight: bold; font-size: 1.15em; padding: 12px 12px 0 0;'>"
+        f"Total Descontos: {formatar_moeda(descontos)}</div>", 
+        unsafe_allow_html=True
+    )
 
     st.markdown("---")
     
-    # RENDERIZAÇÃO: LÍQUIDO EM DESTAQUE
+    # RENDERIZAÇÃO: LÍQUIDO EM DESTAQUE LIMPO
     st.markdown(f"""
-    <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center;">
-        <h4 style="margin: 0; color: #475569; text-transform: uppercase; font-size: 0.9rem;">Valor Líquido a Receber</h4>
-        <h2 style="margin: 5px 0 0 0; color: #1e3a8a; font-size: 2rem;">{formatar_moeda(liquido)}</h2>
+    <div style="text-align: center; margin: 15px 0;">
+        <div style="font-size: 1rem; text-transform: uppercase; opacity: 0.8;">Valor Líquido a Receber</div>
+        <div style="font-size: 2.3rem; font-weight: bold; margin-top: 5px;">{formatar_moeda(liquido)}</div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("---")
 
     # --- LÓGICA DE VALIDAÇÃO E DOWNLOAD ---
     if status_atual and status_atual[0] == "Em Revisão":
@@ -295,7 +313,7 @@ else:
         with col_aprov:
             if st.button("✅ Confirmar Valores", use_container_width=True, type="primary"):
                 salvar_resposta(func_dados["cpf"], func_dados["competencia"], "Aprovado")
-                st.rerun() # Recarrega a tela para ocultar os botões e mostrar o de download
+                st.rerun()
 
         with col_revis:
             with st.popover("❌ Solicitar Revisão", use_container_width=True):

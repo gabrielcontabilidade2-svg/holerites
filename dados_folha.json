@@ -1,0 +1,20 @@
+[
+  {
+    "empresa": "WPB COMERCIAL LTDA",
+    "competencia": "Julho/2026",
+    "cpf": "13662595729",
+    "data_nascimento": "1991-03-21",
+    "nome": "GABRIEL SAM ALVES FERREIRA",
+    "cargo": "Assistente Administrativo",
+    "pix": "gabrielcontabilidade2@gmail.com",
+    "tipo_pix": "E-mail",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 7000.0
+      }
+    ]
+  }
+]

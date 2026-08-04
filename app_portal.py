@@ -5,7 +5,6 @@ from datetime import datetime
 import streamlit as st
 from weasyprint import HTML
 
-# Configuração da página
 st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="centered")
 
 # --- CONTROLE DE SESSÃO (LOGIN) ---
@@ -13,7 +12,7 @@ if "autenticado" not in st.session_state:
     st.session_state.autenticado = False
     st.session_state.dados_func = None
 
-# --- BANCO DE DADOS LOCAL (SQLite) PARA RESPOSTAS ---
+# --- BANCO DE DADOS LOCAL (SQLite) ---
 def init_db():
     conn = sqlite3.connect("status_holerites.db")
     cursor = conn.cursor()
@@ -52,20 +51,18 @@ init_db()
 
 # --- FUNÇÕES DE APOIO ---
 def limpar_numeros(texto: str) -> str:
-    """Remove caracteres não numéricos."""
     return re.sub(r"\D", "", str(texto))
 
 def formatar_moeda(valor: float) -> str:
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# --- GERADOR DE PDF DINÂMICO ---
+# --- GERADOR DE PDF DINÂMICO (NOVO LAYOUT) ---
 def gerar_pdf_holerite(dados_func):
     proventos_html = ""
     descontos_html = ""
     proventos_tot = 0.0
     descontos_tot = 0.0
     
-    # Separação das verbas
     for v in dados_func["verbas"]:
         if v["tipo"] == "provento":
             proventos_html += f"""
@@ -75,7 +72,7 @@ def gerar_pdf_holerite(dados_func):
             </tr>
             """
             proventos_tot += v["valor"]
-        else:
+        elif v["tipo"] == "desconto":
             descontos_html += f"""
             <tr>
                 <td>{v['descricao']}</td>
@@ -94,29 +91,30 @@ def gerar_pdf_holerite(dados_func):
     <style>
       @page {{ size: A4; margin: 15mm; background-color: #ffffff; }}
       body {{ font-family: Helvetica, sans-serif; font-size: 10pt; color: #111827; }}
-      .header {{ width: 100%; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; margin-bottom: 12px; }}
-      .info-box {{ background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 14px; border-radius: 4px; }}
-      table {{ width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #000; }}
-      th {{ background-color: #f3f4f6; color: #000; padding: 6px; font-size: 9pt; text-transform: uppercase; text-align: left; border-bottom: 1px solid #000; font-weight: bold; }}
-      td {{ padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 9pt; }}
-      .totals-row td {{ font-weight: bold; background-color: #f9fafb; border-top: 1px solid #000; }}
-      .liquido-box {{ width: 100%; border: 1px solid #000; background-color: #e5e7eb; padding: 10px; font-weight: bold; font-size: 11pt; margin-top: 10px; }}
+      .header {{ width: 100%; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; }}
+      .info-box {{ width: 100%; margin-bottom: 15px; }}
+      table {{ width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 1px solid #000; }}
+      th {{ background-color: #f3f4f6; color: #000; padding: 8px; font-size: 9pt; text-transform: uppercase; text-align: left; border-bottom: 1px solid #000; font-weight: bold; }}
+      td {{ padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 9.5pt; }}
+      .totals-row td {{ font-weight: bold; background-color: #f9fafb; border-top: 1px solid #000; border-bottom: none; }}
+      .liquido-box {{ width: 100%; border: 1px solid #000; background-color: #e5e7eb; padding: 12px 8px; font-weight: bold; font-size: 11pt; margin-top: 10px; }}
       .liquido-table {{ width: 100%; border: none; margin: 0; }}
       .liquido-table td {{ border: none; padding: 0; font-size: 12pt; }}
     </style>
     </head>
     <body>
       <div class="header">
-        <h2 style="margin:0; color:#1e3a8a;">{dados_func['empresa']}</h2>
-        <p style="margin:2px 0 0 0; color:#4b5563;">RECIBO DE PAGAMENTO - Competência: {dados_func['competencia']}</p>
-      </div>
-      <div class="info-box">
-        <strong>Funcionário:</strong> {dados_func['nome']} | <strong>CPF:</strong> {dados_func['cpf']}<br>
-        <strong>Cargo:</strong> {dados_func['cargo']} <br>
-        <strong>Chave PIX:</strong> {dados_func.get('pix', 'Não cadastrada')} ({dados_func.get('tipo_pix', '')})
+        <h2 style="margin:0;">{dados_func['empresa']}</h2>
+        <p style="margin:2px 0 0 0;">RECIBO DE PAGAMENTO - Competência: {dados_func['competencia']}</p>
       </div>
       
-      <!-- TABELA DE PROVENTOS -->
+      <div class="info-box">
+        <strong>Funcionário:</strong> {dados_func['nome']} <br>
+        <strong>Cargo:</strong> {dados_func['cargo']} <br>
+        <strong>CPF:</strong> {dados_func['cpf']} | <strong>Chave PIX:</strong> {dados_func.get('pix', 'Não cadastrada')}
+      </div>
+      
+      <!-- TABELA PROVENTOS -->
       <table>
         <thead>
           <tr>
@@ -133,7 +131,7 @@ def gerar_pdf_holerite(dados_func):
         </tbody>
       </table>
 
-      <!-- TABELA DE DESCONTOS -->
+      <!-- TABELA DESCONTOS -->
       <table>
         <thead>
           <tr>
@@ -154,19 +152,21 @@ def gerar_pdf_holerite(dados_func):
       <div class="liquido-box">
         <table class="liquido-table">
             <tr>
-                <td style="text-align: left;">VALOR LÍQUIDO A RECEBER:</td>
+                <td style="text-align: left; text-transform: uppercase;">VALOR LÍQUIDO A RECEBER:</td>
                 <td style="text-align: right;">{formatar_moeda(liquido)}</td>
             </tr>
         </table>
       </div>
-
-      <p style="font-size: 8pt; text-align: center; color: #64748b; margin-top: 30px;">
-        Documento validado eletronicamente pelo funcionário via portal.
-      </p>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={dados_func.get('pix', '')}" alt="QR Code PIX">
+        <p style="font-size: 8pt; font-weight: bold;">CHAVE PIX: {dados_func.get('pix', '')}</p>
+      </div>
     </body>
     </html>
     """
     return HTML(string=html_content).write_pdf()
+
 
 # =====================================================================
 # INTERFACE PRINCIPAL
@@ -184,7 +184,6 @@ if not st.session_state.autenticado:
 
     if submitted:
         cpf_limpo = limpar_numeros(cpf_input)
-        
         if len(cpf_limpo) != 11:
             st.error("Por favor, insira um CPF válido com 11 dígitos.")
             st.stop()
@@ -196,18 +195,13 @@ if not st.session_state.autenticado:
             st.error("Base de dados de folha não encontrada (dados_folha.json).")
             st.stop()
 
-        # Busca e validação
         func_encontrado = None
         for item in base_folha:
             if item["cpf"] == cpf_limpo:
                 dt_json = item.get("data_nascimento", "")
-                
                 if "-" in dt_json and len(dt_json) >= 10:
                     partes = dt_json[:10].split("-")
-                    if len(partes) == 3:
-                        dt_json_comparacao = partes[2] + partes[1] + partes[0]
-                    else:
-                        dt_json_comparacao = limpar_numeros(dt_json)
+                    dt_json_comparacao = partes[2] + partes[1] + partes[0] if len(partes) == 3 else limpar_numeros(dt_json)
                 else:
                     dt_json_comparacao = limpar_numeros(dt_json)
                     
@@ -218,7 +212,6 @@ if not st.session_state.autenticado:
         if not func_encontrado:
             st.error("❌ Dados incorretos ou holerite não disponível para este CPF/Data de Nascimento.")
         else:
-            # Login com sucesso! Altera o state e reinicia a tela
             st.session_state.autenticado = True
             st.session_state.dados_func = func_encontrado
             st.rerun()
@@ -226,6 +219,7 @@ if not st.session_state.autenticado:
 else:
     # --- TELA 2: VISUALIZAÇÃO DO HOLERITE ---
     func_dados = st.session_state.dados_func
+    status_atual = obter_status(func_dados["cpf"], func_dados["competencia"])
     
     col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
     col_titulo.title(f"Holerite - {func_dados['competencia']}")
@@ -234,43 +228,56 @@ else:
         st.session_state.dados_func = None
         st.rerun()
     
-    # Verifica o status no banco local
-    status_atual = obter_status(func_dados["cpf"], func_dados["competencia"])
-
     st.write(f"**Funcionário:** {func_dados['nome']}")
     st.write(f"**Cargo:** {func_dados['cargo']}")
-    st.write(f"**PIX Cadastrado:** {func_dados.get('pix', 'Não cadastrada')} ({func_dados.get('tipo_pix', '')})")
+    st.write(f"**PIX Cadastrado:** {func_dados.get('pix', 'Não cadastrada')}")
     
-    proventos = sum(v["valor"] for v in func_dados["verbas"] if v["tipo"] == "provento")
-    descontos = sum(v["valor"] for v in func_dados["verbas"] if v["tipo"] == "desconto")
+    # Processamento e segregação das verbas
+    proventos_list = [v for v in func_dados["verbas"] if v["tipo"] == "provento"]
+    descontos_list = [v for v in func_dados["verbas"] if v["tipo"] == "desconto"]
+    
+    proventos = sum(v["valor"] for v in proventos_list)
+    descontos = sum(v["valor"] for v in descontos_list)
     liquido = proventos - descontos
 
-    # Renderização das Verbas na Interface
     st.markdown("---")
-    st.markdown("### 📋 Detalhamento das Verbas")
     
-    for v in func_dados["verbas"]:
-        c1, c2, c3 = st.columns([4, 2, 3])
+    # RENDERIZAÇÃO: PROVENTOS
+    st.markdown("### 🟢 Proventos")
+    for v in proventos_list:
+        c1, c2 = st.columns([4, 2])
         c1.write(v['descricao'])
-        c2.write(f"_{v['ref']}_")
-        if v["tipo"] == "provento":
-            c3.markdown(f"<span style='color:green;'>+ {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
-        else:
-            c3.markdown(f"<span style='color:red;'>- {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
+        c2.markdown(f"<span style='color:green; font-weight: 500;'>+ {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: right; font-weight: bold; color: green;'>Total Proventos: {formatar_moeda(proventos)}</div>", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # RENDERIZAÇÃO: DESCONTOS
+    st.markdown("### 🔴 Descontos")
+    for v in descontos_list:
+        c1, c2 = st.columns([4, 2])
+        c1.write(v['descricao'])
+        c2.markdown(f"<span style='color:red; font-weight: 500;'>- {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align: right; font-weight: bold; color: red;'>Total Descontos: {formatar_moeda(descontos)}</div>", unsafe_allow_html=True)
 
     st.markdown("---")
-    col_t1, col_t2, col_t3 = st.columns(3)
-    col_t1.metric("Proventos", formatar_moeda(proventos))
-    col_t2.metric("Descontos", formatar_moeda(descontos))
-    col_t3.metric("A RECEBER", formatar_moeda(liquido))
-    st.markdown("---")
-
-    # Lógica Condicional de Validação e Download
-    if status_atual and status_atual[0] == "Em Revisão":
-        st.error(f"⚠️ Você solicitou a revisão deste holerite. Aguarde o contato do RH.\n\n**Motivo registrado:** {status_atual[1]}")
     
+    # RENDERIZAÇÃO: LÍQUIDO EM DESTAQUE
+    st.markdown(f"""
+    <div style="background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 20px; text-align: center;">
+        <h4 style="margin: 0; color: #475569; text-transform: uppercase; font-size: 0.9rem;">Valor Líquido a Receber</h4>
+        <h2 style="margin: 5px 0 0 0; color: #1e3a8a; font-size: 2rem;">{formatar_moeda(liquido)}</h2>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- LÓGICA DE VALIDAÇÃO E DOWNLOAD ---
+    if status_atual and status_atual[0] == "Em Revisão":
+        st.error(f"⚠️ **Pedido de Revisão Registrado**\n\nMotivo: {status_atual[1]}\n\nAguarde o retorno do RH.")
+        
     elif status_atual and status_atual[0] == "Aprovado":
-        st.success("✅ Documento validado eletronicamente!")
+        st.success("✅ Recibo validado eletronicamente.")
         pdf_bytes = gerar_pdf_holerite(func_dados)
         st.download_button(
             label="📥 Baixar PDF do Holerite",
@@ -282,20 +289,18 @@ else:
         )
         
     else:
-        st.write("### Validação Pendente")
-        st.info("Por favor, confirme se os valores acima estão corretos para liberar o PDF do seu holerite.")
-        
+        st.info("Valide os valores acima para liberar o download do seu holerite.")
         col_aprov, col_revis = st.columns(2)
 
         with col_aprov:
-            if st.button("✅ Validar e Aprovar", use_container_width=True, type="primary"):
+            if st.button("✅ Confirmar Valores", use_container_width=True, type="primary"):
                 salvar_resposta(func_dados["cpf"], func_dados["competencia"], "Aprovado")
-                st.rerun()
+                st.rerun() # Recarrega a tela para ocultar os botões e mostrar o de download
 
         with col_revis:
-            with st.popover("❌ Solicitar Revisão do RH", use_container_width=True):
-                motivo = st.text_area("Descreva o motivo (ex: horas extras faltando):")
-                if st.button("Enviar Pedido"):
+            with st.popover("❌ Solicitar Revisão", use_container_width=True):
+                motivo = st.text_area("Descreva a divergência encontrada:")
+                if st.button("Enviar"):
                     if motivo.strip():
                         salvar_resposta(func_dados["cpf"], func_dados["competencia"], "Em Revisão", motivo)
                         st.rerun()

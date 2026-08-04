@@ -60,26 +60,30 @@ def formatar_moeda(valor: float) -> str:
 
 # --- GERADOR DE PDF DINÂMICO ---
 def gerar_pdf_holerite(dados_func):
-    rows_html = ""
+    proventos_html = ""
+    descontos_html = ""
     proventos_tot = 0.0
     descontos_tot = 0.0
     
+    # Separação das verbas
     for v in dados_func["verbas"]:
         if v["tipo"] == "provento":
-            val_html = f"<td style='text-align: right; color: #065f46;'>{formatar_moeda(v['valor'])}</td><td style='text-align: right;'>-</td>"
+            proventos_html += f"""
+            <tr>
+                <td>{v['descricao']}</td>
+                <td style='text-align: right; color: #065f46;'>{formatar_moeda(v['valor'])}</td>
+            </tr>
+            """
             proventos_tot += v["valor"]
         else:
-            val_html = f"<td style='text-align: right;'>-</td><td style='text-align: right; color: #991b1b;'>{formatar_moeda(v['valor'])}</td>"
+            descontos_html += f"""
+            <tr>
+                <td>{v['descricao']}</td>
+                <td style='text-align: right; color: #991b1b;'>{formatar_moeda(v['valor'])}</td>
+            </tr>
+            """
             descontos_tot += v["valor"]
             
-        rows_html += f"""
-        <tr>
-            <td>{v['descricao']}</td>
-            <td style="text-align: center;">{v['ref']}</td>
-            {val_html}
-        </tr>
-        """
-    
     liquido = proventos_tot - descontos_tot
 
     html_content = f"""
@@ -92,10 +96,13 @@ def gerar_pdf_holerite(dados_func):
       body {{ font-family: Helvetica, sans-serif; font-size: 10pt; color: #111827; }}
       .header {{ width: 100%; border-bottom: 2px solid #1e3a8a; padding-bottom: 8px; margin-bottom: 12px; }}
       .info-box {{ background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 10px; margin-bottom: 14px; border-radius: 4px; }}
-      table {{ width: 100%; border-collapse: collapse; margin-bottom: 14px; }}
-      th {{ background-color: #1e3a8a; color: white; padding: 6px; font-size: 8.5pt; text-transform: uppercase; text-align: left; }}
+      table {{ width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #000; }}
+      th {{ background-color: #f3f4f6; color: #000; padding: 6px; font-size: 9pt; text-transform: uppercase; text-align: left; border-bottom: 1px solid #000; font-weight: bold; }}
       td {{ padding: 6px; border-bottom: 1px solid #e5e7eb; font-size: 9pt; }}
-      .totals td {{ font-weight: bold; padding: 8px; border: 1px solid #cbd5e1; font-size: 10pt; }}
+      .totals-row td {{ font-weight: bold; background-color: #f9fafb; border-top: 1px solid #000; }}
+      .liquido-box {{ width: 100%; border: 1px solid #000; background-color: #e5e7eb; padding: 10px; font-weight: bold; font-size: 11pt; margin-top: 10px; }}
+      .liquido-table {{ width: 100%; border: none; margin: 0; }}
+      .liquido-table td {{ border: none; padding: 0; font-size: 12pt; }}
     </style>
     </head>
     <body>
@@ -108,26 +115,51 @@ def gerar_pdf_holerite(dados_func):
         <strong>Cargo:</strong> {dados_func['cargo']} <br>
         <strong>Chave PIX:</strong> {dados_func.get('pix', 'Não cadastrada')} ({dados_func.get('tipo_pix', '')})
       </div>
+      
+      <!-- TABELA DE PROVENTOS -->
       <table>
         <thead>
           <tr>
-            <th style="width:50%;">Descrição</th>
-            <th style="width:10%; text-align:center;">Ref.</th>
-            <th style="width:20%; text-align:right;">Proventos</th>
-            <th style="width:20%; text-align:right;">Descontos</th>
+            <th style="width:70%;">DESCRIÇÃO DOS PROVENTOS</th>
+            <th style="width:30%; text-align:right;">VALOR</th>
           </tr>
         </thead>
         <tbody>
-          {rows_html}
+          {proventos_html}
+          <tr class="totals-row">
+            <td style="text-align: right;">TOTAL PROVENTOS:</td>
+            <td style="text-align: right;">{formatar_moeda(proventos_tot)}</td>
+          </tr>
         </tbody>
       </table>
-      <table class="totals">
-        <tr>
-          <td style="background:#ecfdf5; color:#065f46;">Tot. Proventos: {formatar_moeda(proventos_tot)}</td>
-          <td style="background:#fef2f2; color:#991b1b;">Tot. Descontos: {formatar_moeda(descontos_tot)}</td>
-          <td style="background:#eff6ff; color:#1e40af;">VALOR LÍQUIDO: {formatar_moeda(liquido)}</td>
-        </tr>
+
+      <!-- TABELA DE DESCONTOS -->
+      <table>
+        <thead>
+          <tr>
+            <th style="width:70%;">DESCRIÇÃO DOS DESCONTOS</th>
+            <th style="width:30%; text-align:right;">VALOR</th>
+          </tr>
+        </thead>
+        <tbody>
+          {descontos_html}
+          <tr class="totals-row">
+            <td style="text-align: right;">TOTAL DESCONTOS:</td>
+            <td style="text-align: right;">{formatar_moeda(descontos_tot)}</td>
+          </tr>
+        </tbody>
       </table>
+
+      <!-- VALOR LÍQUIDO -->
+      <div class="liquido-box">
+        <table class="liquido-table">
+            <tr>
+                <td style="text-align: left;">VALOR LÍQUIDO A RECEBER:</td>
+                <td style="text-align: right;">{formatar_moeda(liquido)}</td>
+            </tr>
+        </table>
+      </div>
+
       <p style="font-size: 8pt; text-align: center; color: #64748b; margin-top: 30px;">
         Documento validado eletronicamente pelo funcionário via portal.
       </p>
@@ -195,7 +227,6 @@ else:
     # --- TELA 2: VISUALIZAÇÃO DO HOLERITE ---
     func_dados = st.session_state.dados_func
     
-    # Cabeçalho com botão de Sair
     col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
     col_titulo.title(f"Holerite - {func_dados['competencia']}")
     if col_sair.button("🚪 Sair", use_container_width=True):
@@ -206,56 +237,60 @@ else:
     # Verifica o status no banco local
     status_atual = obter_status(func_dados["cpf"], func_dados["competencia"])
 
+    st.write(f"**Funcionário:** {func_dados['nome']}")
+    st.write(f"**Cargo:** {func_dados['cargo']}")
+    st.write(f"**PIX Cadastrado:** {func_dados.get('pix', 'Não cadastrada')} ({func_dados.get('tipo_pix', '')})")
+    
+    proventos = sum(v["valor"] for v in func_dados["verbas"] if v["tipo"] == "provento")
+    descontos = sum(v["valor"] for v in func_dados["verbas"] if v["tipo"] == "desconto")
+    liquido = proventos - descontos
+
+    # Renderização das Verbas na Interface
+    st.markdown("---")
+    st.markdown("### 📋 Detalhamento das Verbas")
+    
+    for v in func_dados["verbas"]:
+        c1, c2, c3 = st.columns([4, 2, 3])
+        c1.write(v['descricao'])
+        c2.write(f"_{v['ref']}_")
+        if v["tipo"] == "provento":
+            c3.markdown(f"<span style='color:green;'>+ {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
+        else:
+            c3.markdown(f"<span style='color:red;'>- {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
+
+    st.markdown("---")
+    col_t1, col_t2, col_t3 = st.columns(3)
+    col_t1.metric("Proventos", formatar_moeda(proventos))
+    col_t2.metric("Descontos", formatar_moeda(descontos))
+    col_t3.metric("A RECEBER", formatar_moeda(liquido))
+    st.markdown("---")
+
+    # Lógica Condicional de Validação e Download
     if status_atual and status_atual[0] == "Em Revisão":
-        st.error(f"⚠️ Você já solicitou a revisão deste holerite. Aguarde o contato do RH.\n\n**Motivo registrado:** {status_atual[1]}")
+        st.error(f"⚠️ Você solicitou a revisão deste holerite. Aguarde o contato do RH.\n\n**Motivo registrado:** {status_atual[1]}")
+    
+    elif status_atual and status_atual[0] == "Aprovado":
+        st.success("✅ Documento validado eletronicamente!")
+        pdf_bytes = gerar_pdf_holerite(func_dados)
+        st.download_button(
+            label="📥 Baixar PDF do Holerite",
+            data=pdf_bytes,
+            file_name=f"Holerite_{func_dados['competencia'].replace('/', '_')}.pdf",
+            mime="application/pdf",
+            type="primary",
+            use_container_width=True
+        )
+        
     else:
-        st.write(f"**Funcionário:** {func_dados['nome']}")
-        st.write(f"**Cargo:** {func_dados['cargo']}")
-        st.write(f"**PIX Cadastrado:** {func_dados.get('pix', 'Não cadastrada')} ({func_dados.get('tipo_pix', '')})")
+        st.write("### Validação Pendente")
+        st.info("Por favor, confirme se os valores acima estão corretos para liberar o PDF do seu holerite.")
         
-        proventos = sum(v["valor"] for v in func_dados["verbas"] if v["tipo"] == "provento")
-        descontos = sum(v["valor"] for v in func_dados["verbas"] if v["tipo"] == "desconto")
-        liquido = proventos - descontos
-
-        # Renderização das Verbas
-        st.markdown("---")
-        st.markdown("### 📋 Detalhamento das Verbas")
-        
-        # Grid para visualização
-        for v in func_dados["verbas"]:
-            c1, c2, c3 = st.columns([4, 2, 3])
-            c1.write(v['descricao'])
-            c2.write(f"_{v['ref']}_")
-            if v["tipo"] == "provento":
-                c3.markdown(f"<span style='color:green;'>+ {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
-            else:
-                c3.markdown(f"<span style='color:red;'>- {formatar_moeda(v['valor'])}</span>", unsafe_allow_html=True)
-
-        # Totais
-        st.markdown("---")
-        col_t1, col_t2, col_t3 = st.columns(3)
-        col_t1.metric("Proventos", formatar_moeda(proventos))
-        col_t2.metric("Descontos", formatar_moeda(descontos))
-        col_t3.metric("A RECEBER", formatar_moeda(liquido))
-
-        st.markdown("---")
-        st.write("### Validação")
-        
-        # Botões de Ação
         col_aprov, col_revis = st.columns(2)
 
         with col_aprov:
-            pdf_bytes = gerar_pdf_holerite(func_dados)
-            if st.download_button(
-                label="✅ Concordo e Baixar PDF",
-                data=pdf_bytes,
-                file_name=f"Holerite_{func_dados['competencia'].replace('/', '_')}.pdf",
-                mime="application/pdf",
-                type="primary",
-                use_container_width=True
-            ):
+            if st.button("✅ Validar e Aprovar", use_container_width=True, type="primary"):
                 salvar_resposta(func_dados["cpf"], func_dados["competencia"], "Aprovado")
-                st.toast("Holerite aprovado com sucesso!")
+                st.rerun()
 
         with col_revis:
             with st.popover("❌ Solicitar Revisão do RH", use_container_width=True):

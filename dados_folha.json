@@ -10,52 +10,52 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "ADICIONAIS FIXOS",
+        "descricao": "Periculosidade",
         "tipo": "provento",
         "ref": "-",
         "valor": 528.34
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 199.33
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 1000.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 181.73
       },
       {
-        "descricao": "OUTROS DESCONTOS",
-        "tipo": "desconto",
-        "ref": "-",
-        "valor": 348.0
-      },
-      {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 300.0
+      },
+      {
+        "descricao": "Desconto Art. 462, §1º, CLT",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 348.0
       }
     ]
   },
@@ -70,37 +70,37 @@
     "tipo_pix": "Celular",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 4929.52
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 617.4100000000001
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 150.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 654.35
       },
       {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 200.0
@@ -118,46 +118,46 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "ADICIONAIS FIXOS",
+        "descricao": "Periculosidade",
         "tipo": "provento",
         "ref": "-",
         "valor": 264.17
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 99.66
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 157.95
       },
       {
-        "descricao": "OUTROS DESCONTOS",
-        "tipo": "desconto",
-        "ref": "-",
-        "valor": 56.11
-      },
-      {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 776.49
+      },
+      {
+        "descricao": "Desconto Art. 462, §1º, CLT",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 56.11
       }
     ]
   },
@@ -172,49 +172,49 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "COMISSÃO",
-        "tipo": "provento",
-        "ref": "-",
-        "valor": 1422.65
-      },
-      {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 181.32
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Comissões",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 1422.65
+      },
+      {
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 210.0
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 200.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 134.18
       },
       {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 516.22
@@ -232,43 +232,43 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "COMISSÃO",
-        "tipo": "provento",
-        "ref": "-",
-        "valor": 1422.65
-      },
-      {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 159.7
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Comissões",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 1422.65
+      },
+      {
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 429.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 134.18
       },
       {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 131.36
@@ -286,31 +286,31 @@
     "tipo_pix": "Celular",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 171.71
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 250.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 134.18
@@ -328,19 +328,19 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 2688.83
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 232.25
@@ -358,43 +358,43 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "COMISSÃO",
-        "tipo": "provento",
-        "ref": "-",
-        "valor": 1422.65
-      },
-      {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 240.15
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Comissões",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 1422.65
+      },
+      {
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 241.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 134.18
       },
       {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 29.14
@@ -412,43 +412,43 @@
     "tipo_pix": "Celular",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "ADICIONAIS FIXOS",
+        "descricao": "Periculosidade",
         "tipo": "provento",
         "ref": "-",
         "valor": 528.34
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 260.57
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 1000.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 181.73
       },
       {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 378.92
@@ -466,7 +466,7 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1600.0
@@ -484,43 +484,43 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 1761.12
       },
       {
-        "descricao": "ADICIONAIS FIXOS",
+        "descricao": "Periculosidade",
         "tipo": "provento",
         "ref": "-",
         "valor": 264.17
       },
       {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "HORAS EXTRAS",
+        "descricao": "Horas Extras",
         "tipo": "provento",
         "ref": "-",
         "valor": 253.36
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 117.4
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 250.0
       },
       {
-        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "descricao": "Descontos em Folha",
         "tipo": "desconto",
         "ref": "-",
         "valor": 157.95
@@ -538,37 +538,37 @@
     "tipo_pix": "CPF",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 3000.0
       },
       {
-        "descricao": "BÔNUS",
-        "tipo": "provento",
-        "ref": "-",
-        "valor": 200.0
-      },
-      {
-        "descricao": "AJUDA DE CUSTO",
+        "descricao": "Ajuda de Custo",
         "tipo": "provento",
         "ref": "-",
         "valor": 244.8
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Bônus / Premiações",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 200.0
+      },
+      {
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 58.7
       },
       {
-        "descricao": "VALE/ADIANTAMENTO",
+        "descricao": "Vales / Adiantamentos",
         "tipo": "desconto",
         "ref": "-",
         "valor": 1250.0
       },
       {
-        "descricao": "DESCONTO CREDIÁRIO",
+        "descricao": "Desconto Crediário",
         "tipo": "desconto",
         "ref": "-",
         "valor": 1166.88
@@ -586,19 +586,19 @@
     "tipo_pix": "Celular",
     "verbas": [
       {
-        "descricao": "SALÁRIO BASE",
+        "descricao": "Salário Base (30 dias)",
         "tipo": "provento",
         "ref": "30d",
         "valor": 2000.0000000000002
       },
       {
-        "descricao": "BÔNUS",
+        "descricao": "Bônus / Premiações",
         "tipo": "provento",
         "ref": "-",
         "valor": 2774.39
       },
       {
-        "descricao": "OUTROS ADICIONAIS",
+        "descricao": "Outros Proventos",
         "tipo": "provento",
         "ref": "-",
         "valor": 92.7

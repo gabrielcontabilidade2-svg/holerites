@@ -137,8 +137,19 @@ st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 
 # Formulário de Login Duplo
 with st.form("login_form"):
-    cpf_input = st.text_input("CPF (Apenas números):", max_chars=14)
-    dt_nasc_input = st.text_input("Data de Nascimento (DD/MM/AAAA):", max_chars=10)
+    cpf_input = st.text_input(
+        "CPF:", 
+        max_chars=11, 
+        placeholder="Digite apenas os 11 números",
+        help="Não precisa colocar pontos ou traços."
+    )
+
+    dt_nasc_input = st.text_input(
+        "Data de Nascimento:", 
+        max_chars=8, 
+        placeholder="DDMMAAAA (Apenas números)",
+        help="Exemplo: Para 21/03/1991, digite 21031991"
+    )
     submitted = st.form_submit_button("Consultar Holerite")
 
 if submitted:
@@ -160,8 +171,22 @@ if submitted:
     func_dados = None
     for item in base_folha:
         if item["cpf"] == cpf_limpo:
-            # Validação simples da data de nascimento (ignorando pontuações)
-            if limpar_numeros(item.get("data_nascimento", "")) == limpar_numeros(dt_nasc_input):
+            
+            # Extrai a data que veio do JSON
+            dt_json = item.get("data_nascimento", "")
+            
+            # Se a data veio no padrão de banco de dados (AAAA-MM-DD), inverte para DDMMAAAA
+            if "-" in dt_json and len(dt_json) >= 10:
+                partes = dt_json[:10].split("-")
+                if len(partes) == 3:
+                    dt_json_comparacao = partes[2] + partes[1] + partes[0]
+                else:
+                    dt_json_comparacao = limpar_numeros(dt_json)
+            else:
+                dt_json_comparacao = limpar_numeros(dt_json)
+                
+            # Compara a data invertida do JSON com a data digitada limpa
+            if dt_json_comparacao == limpar_numeros(dt_nasc_input):
                 func_dados = item
                 break
 

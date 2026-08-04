@@ -242,8 +242,8 @@ else:
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # RENDERIZAÇÃO: PROVENTOS (Efeito Zebra)
-    st.markdown("### Proventos")
+    # RENDERIZAÇÃO: PROVENTOS (Efeito Zebra e Cabeçalho Verde)
+    st.markdown("### <span style='color: #2ecc71;'>Proventos</span>", unsafe_allow_html=True)
     for i, v in enumerate(proventos_list):
         bg_color = "rgba(128, 128, 128, 0.08)" if i % 2 == 0 else "transparent"
         st.markdown(
@@ -261,8 +261,8 @@ else:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # RENDERIZAÇÃO: DESCONTOS (Efeito Zebra)
-    st.markdown("### Descontos")
+    # RENDERIZAÇÃO: DESCONTOS (Efeito Zebra e Cabeçalho Vermelho)
+    st.markdown("### <span style='color: #e74c3c;'>Descontos</span>", unsafe_allow_html=True)
     for i, v in enumerate(descontos_list):
         bg_color = "rgba(128, 128, 128, 0.08)" if i % 2 == 0 else "transparent"
         st.markdown(

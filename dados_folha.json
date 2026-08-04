@@ -1,19 +1,607 @@
 [
   {
-    "empresa": "WPB COMERCIAL LTDA",
+    "empresa": "DROGARIA QUARTO PASSO",
     "competencia": "Julho/2026",
-    "cpf": "13662595729",
-    "data_nascimento": "1991-03-21",
-    "nome": "GABRIEL SAM ALVES FERREIRA",
-    "cargo": "Assistente Administrativo",
-    "pix": "gabrielcontabilidade2@gmail.com",
-    "tipo_pix": "E-mail",
+    "cpf": "18599503707",
+    "data_nascimento": "2026-03-31",
+    "nome": "ELIZEU DE OLIVEIRA SOUZA",
+    "cargo": "Motoboy",
+    "pix": "18599503707",
+    "tipo_pix": "CPF",
     "verbas": [
       {
         "descricao": "SALÁRIO BASE",
         "tipo": "provento",
         "ref": "30d",
-        "valor": 7000.0
+        "valor": 1761.12
+      },
+      {
+        "descricao": "ADICIONAIS FIXOS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 528.34
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 199.33
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 1000.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 181.73
+      },
+      {
+        "descricao": "OUTROS DESCONTOS",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 348.0
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 300.0
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "05180096618",
+    "data_nascimento": "1980-08-20",
+    "nome": "LIVIA LEMOS PIMENTA",
+    "cargo": "Farmacêutico",
+    "pix": "31993201050",
+    "tipo_pix": "Celular",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 4929.52
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 617.4100000000001
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 150.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 654.35
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 200.0
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "06226704764",
+    "data_nascimento": "2003-12-01",
+    "nome": "BRENDA PEREIRA TAVARES",
+    "cargo": "Operador de Caixa",
+    "pix": "06226704764",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "ADICIONAIS FIXOS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 264.17
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 99.66
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 157.95
+      },
+      {
+        "descricao": "OUTROS DESCONTOS",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 56.11
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 776.49
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "18296871742",
+    "data_nascimento": "1999-04-05",
+    "nome": "PEDRO HENRIQUE MEDAWAR",
+    "cargo": "Atendente de Farmácia",
+    "pix": "18296871742",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "COMISSÃO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 1422.65
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 181.32
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 210.0
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 200.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 134.18
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 516.22
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "16805188792",
+    "data_nascimento": "2005-11-26",
+    "nome": "SANYELTON DE OLIVEIRA FIGUEIREDO",
+    "cargo": "Atendente de Farmácia",
+    "pix": "16805188792",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "COMISSÃO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 1422.65
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 159.7
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 429.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 134.18
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 131.36
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "17587206701",
+    "data_nascimento": "1997-10-03",
+    "nome": "ANA CAROLINE SIMOES DE MORAES",
+    "cargo": "Perfumista",
+    "pix": "27996907981",
+    "tipo_pix": "Celular",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 171.71
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 250.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 134.18
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "07910647603",
+    "data_nascimento": "1987-09-21",
+    "nome": "ALINE FIGUEIREDO SILVA",
+    "cargo": "Farmacêutico",
+    "pix": "07910647603",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 2688.83
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 232.25
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "09460400523",
+    "data_nascimento": "2005-12-19",
+    "nome": "CAIQUE NUNES DE MELLO LIMA GUEDES",
+    "cargo": "Atendente de Farmácia",
+    "pix": "09460400523",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "COMISSÃO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 1422.65
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 240.15
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 241.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 134.18
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 29.14
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "05009722577",
+    "data_nascimento": "1990-05-08",
+    "nome": "ORLEANS PINHEIRO SANTANA",
+    "cargo": "Motoboy",
+    "pix": "27988692799",
+    "tipo_pix": "Celular",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "ADICIONAIS FIXOS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 528.34
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 260.57
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 1000.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 181.73
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 378.92
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "76179125600",
+    "data_nascimento": "2020-01-01",
+    "nome": "MAXWEL DRUMOND TORRES",
+    "cargo": "Vigia",
+    "pix": "76179125600",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1600.0
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "18239367763",
+    "data_nascimento": "2006-05-17",
+    "nome": "ANA CAROLINA RODRIGUES DE LIMA",
+    "cargo": "Operador de Caixa",
+    "pix": "18239367763",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 1761.12
+      },
+      {
+        "descricao": "ADICIONAIS FIXOS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 264.17
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "HORAS EXTRAS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 253.36
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 117.4
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 250.0
+      },
+      {
+        "descricao": "DESCONTOS LEGAIS (INSS/IRRF)",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 157.95
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "14686517656",
+    "data_nascimento": "1997-06-06",
+    "nome": "KARINA RODRIGUES AMORIM",
+    "cargo": "Atendente de Farmácia",
+    "pix": "14686517656",
+    "tipo_pix": "CPF",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 3000.0
+      },
+      {
+        "descricao": "BÔNUS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 200.0
+      },
+      {
+        "descricao": "AJUDA DE CUSTO",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 244.8
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 58.7
+      },
+      {
+        "descricao": "VALE/ADIANTAMENTO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 1250.0
+      },
+      {
+        "descricao": "DESCONTO CREDIÁRIO",
+        "tipo": "desconto",
+        "ref": "-",
+        "valor": 1166.88
+      }
+    ]
+  },
+  {
+    "empresa": "DROGARIA QUARTO PASSO",
+    "competencia": "Julho/2026",
+    "cpf": "18792717705",
+    "data_nascimento": "2003-06-26",
+    "nome": "JOAO PEDRO DE CARVALHO PRADO",
+    "cargo": "Atendente de Farmácia",
+    "pix": "27998739959",
+    "tipo_pix": "Celular",
+    "verbas": [
+      {
+        "descricao": "SALÁRIO BASE",
+        "tipo": "provento",
+        "ref": "30d",
+        "valor": 2000.0000000000002
+      },
+      {
+        "descricao": "BÔNUS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 2774.39
+      },
+      {
+        "descricao": "OUTROS ADICIONAIS",
+        "tipo": "provento",
+        "ref": "-",
+        "valor": 92.7
       }
     ]
   }

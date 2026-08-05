@@ -8,6 +8,7 @@ import streamlit as st
 from weasyprint import HTML
 from cryptography.fernet import Fernet
 import glob
+from num2words import num2words
 
 st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="centered")
 
@@ -65,13 +66,21 @@ def gerar_pdf_holerite(dados_func):
     
     for v in dados_func["verbas"]:
         if v["tipo"] == "provento":
-            proventos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right; color: #065f46;'>{formatar_moeda(v['valor'])}</td></tr>"
+            # Removido o estilo de cor para manter preto padrão
+            proventos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right;'>{formatar_moeda(v['valor'])}</td></tr>"
             proventos_tot += v["valor"]
         elif v["tipo"] == "desconto":
-            descontos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right; color: #991b1b;'>{formatar_moeda(v['valor'])}</td></tr>"
+            # Removido o estilo de cor para manter preto padrão
+            descontos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right;'>{formatar_moeda(v['valor'])}</td></tr>"
             descontos_tot += v["valor"]
             
     liquido = proventos_tot - descontos_tot
+
+    # Converte o valor numérico para extenso em reais (pt-BR)
+    try:
+        extenso = num2words(liquido, lang='pt_BR', to='currency').upper()
+    except Exception:
+        extenso = ""
 
     html_content = f"""
     <!DOCTYPE html>
@@ -82,14 +91,31 @@ def gerar_pdf_holerite(dados_func):
       @page {{ size: A4; margin: 15mm; background-color: #ffffff; }}
       body {{ font-family: Helvetica, sans-serif; font-size: 10pt; color: #111827; }}
       .header {{ width: 100%; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; }}
-      .info-box {{ width: 100%; margin-bottom: 15px; }}
-      table {{ width: 100%; border-collapse: collapse; margin-bottom: 10px; border: 1px solid #000; }}
+      
+      /* Aumentado o line-height para não ficar embolado e separado em linhas */
+      .info-box {{ width: 100%; margin-bottom: 20px; line-height: 1.6; font-size: 10.5pt; }}
+      
+      table {{ width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1px solid #000; }}
       th {{ background-color: #f3f4f6; color: #000; padding: 8px; font-size: 9pt; text-transform: uppercase; text-align: left; border-bottom: 1px solid #000; font-weight: bold; }}
       td {{ padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 9.5pt; }}
+      
+      /* Configuração dos totais em negrito e coloridos */
       .totals-row td {{ font-weight: bold; background-color: #f9fafb; border-top: 1px solid #000; border-bottom: none; }}
-      .liquido-box {{ width: 100%; border: 1px solid #000; background-color: #e5e7eb; padding: 12px 8px; font-weight: bold; font-size: 11pt; margin-top: 10px; }}
-      .liquido-table {{ width: 100%; border: none; margin: 0; }}
-      .liquido-table td {{ border: none; padding: 0; font-size: 12pt; }}
+      .total-prov {{ color: #065f46; }}
+      .total-desc {{ color: #991b1b; }}
+      
+      /* Bloco do valor líquido reestruturado para ocupar 100% da largura útil e acomodar o extenso */
+      .liquido-box {{ 
+          width: 100%; 
+          border: 1px solid #000; 
+          background-color: #e5e7eb; 
+          padding: 12px; 
+          box-sizing: border-box;
+          margin-top: 10px; 
+      }}
+      .liquido-header {{ font-weight: bold; font-size: 11pt; }}
+      .liquido-extenso {{ font-size: 9pt; font-weight: normal; margin-top: 5px; text-transform: uppercase; }}
+      
     </style>
     </head>
     <body>
@@ -101,7 +127,8 @@ def gerar_pdf_holerite(dados_func):
       <div class="info-box">
         <strong>Funcionário:</strong> {dados_func['nome']} <br>
         <strong>Cargo:</strong> {dados_func['cargo']} <br>
-        <strong>CPF:</strong> {dados_func['cpf']} | <strong>Chave PIX:</strong> {dados_func.get('pix', 'Não cadastrada')}
+        <strong>CPF:</strong> {dados_func['cpf']} <br>
+        <strong>Chave PIX:</strong> {dados_func.get('pix', 'Não cadastrada')}
       </div>
       
       <table>
@@ -110,7 +137,10 @@ def gerar_pdf_holerite(dados_func):
         </thead>
         <tbody>
           {proventos_html}
-          <tr class="totals-row"><td style="text-align: right;">TOTAL PROVENTOS:</td><td style="text-align: right;">{formatar_moeda(proventos_tot)}</td></tr>
+          <tr class="totals-row">
+            <td class="total-prov" style="text-align: right;">TOTAL PROVENTOS:</td>
+            <td class="total-prov" style="text-align: right;">{formatar_moeda(proventos_tot)}</td>
+          </tr>
         </tbody>
       </table>
 
@@ -120,23 +150,24 @@ def gerar_pdf_holerite(dados_func):
         </thead>
         <tbody>
           {descontos_html}
-          <tr class="totals-row"><td style="text-align: right;">TOTAL DESCONTOS:</td><td style="text-align: right;">{formatar_moeda(descontos_tot)}</td></tr>
+          <tr class="totals-row">
+            <td class="total-desc" style="text-align: right;">TOTAL DESCONTOS:</td>
+            <td class="total-desc" style="text-align: right;">{formatar_moeda(descontos_tot)}</td>
+          </tr>
         </tbody>
       </table>
 
       <div class="liquido-box">
-        <table class="liquido-table">
-            <tr>
-                <td style="text-align: left; text-transform: uppercase;">VALOR LÍQUIDO A RECEBER:</td>
-                <td style="text-align: right;">{formatar_moeda(liquido)}</td>
-            </tr>
-        </table>
+        <div class="liquido-header">
+            <span style="float: left; text-transform: uppercase;">VALOR LÍQUIDO A RECEBER:</span>
+            <span style="float: right;">{formatar_moeda(liquido)}</span>
+            <div style="clear: both;"></div>
+        </div>
+        <div class="liquido-extenso">
+            ({extenso})
+        </div>
       </div>
       
-      <div style="text-align: center; margin-top: 20px;">
-        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data={dados_func.get('pix', '')}" alt="QR Code PIX">
-        <p style="font-size: 8pt; font-weight: bold;">CHAVE PIX: {dados_func.get('pix', '')}</p>
-      </div>
     </body>
     </html>
     """

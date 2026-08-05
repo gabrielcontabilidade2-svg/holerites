@@ -152,41 +152,6 @@ if st.session_state.user_type is None:
     st.title("📄 Portal de Holerites")
     st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 
-    # =========================================================
-    # 🛠️ MODO DIAGNÓSTICO (Remover após encontrar o erro)
-    # =========================================================
-    import glob
-    if st.checkbox("🛠️ Mostrar Diagnóstico (CPF x Data Nascimento)"):
-        st.warning("⚠️ Desative ou apague este bloco antes de liberar para os funcionários!")
-        arquivos_na_pasta = glob.glob("arquivos/*.enc")
-        
-        lista_diagnostico = []
-        if arquivos_na_pasta:
-            try:
-                chave_secreta = st.secrets["CHAVE_CRIPTO"]
-                f = Fernet(chave_secreta)
-                
-                for arq in arquivos_na_pasta:
-                    with open(arq, "rb") as arquivo:
-                        dados_cifrados = arquivo.read()
-                    
-                    json_desc = f.decrypt(dados_cifrados).decode('utf-8')
-                    func = json.loads(json_desc)
-                    
-                    lista_diagnostico.append({
-                        "Arquivo": os.path.basename(arq),
-                        "Nome": func.get("nome"),
-                        "CPF Cru": func.get("cpf"),
-                        "Data Nasc. Crua": func.get("data_nascimento")
-                    })
-                
-                st.dataframe(lista_diagnostico, use_container_width=True)
-            except Exception as e:
-                st.error(f"Erro ao descriptografar para diagnóstico: {e}")
-        else:
-            st.info("Nenhum arquivo .enc encontrado na pasta 'arquivos'.")
-    # =========================================================
-
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()
         dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991", type="password").strip()

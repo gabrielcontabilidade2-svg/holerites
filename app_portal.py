@@ -10,7 +10,7 @@ from cryptography.fernet import Fernet
 import glob
 from num2words import num2words
 
-st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="centered")
+st.set_page_config(page_title="Holerite - MedTem", page_icon="logo.png", layout="centered")
 
 # --- CONTROLE DE SESSÃO ---
 if "user_type" not in st.session_state:
@@ -182,7 +182,10 @@ def gerar_pdf_holerite(dados_func):
 
 if st.session_state.user_type is None:
     # --- TELA 1: LOGIN ---
-    st.title("📄 Portal de Holerites")
+    col_logo, col_tit = st.columns([1, 10], vertical_alignment="center")
+    col_logo.image("logo.png", width=45) # 45 pixels simula o tamanho exato de um emoji grande
+    col_tit.title("Holerite - MedTem")
+    
     st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 
     with st.form("login_form"):

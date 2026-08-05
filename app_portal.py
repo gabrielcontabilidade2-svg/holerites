@@ -66,11 +66,9 @@ def gerar_pdf_holerite(dados_func):
     
     for v in dados_func["verbas"]:
         if v["tipo"] == "provento":
-            # Removido o estilo de cor para manter preto padrão
             proventos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right;'>{formatar_moeda(v['valor'])}</td></tr>"
             proventos_tot += v["valor"]
         elif v["tipo"] == "desconto":
-            # Removido o estilo de cor para manter preto padrão
             descontos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right;'>{formatar_moeda(v['valor'])}</td></tr>"
             descontos_tot += v["valor"]
             
@@ -104,7 +102,7 @@ def gerar_pdf_holerite(dados_func):
       .total-prov {{ color: #065f46; }}
       .total-desc {{ color: #991b1b; }}
       
-      /* Bloco do valor líquido reestruturado para ocupar 100% da largura útil e acomodar o extenso */
+      /* Bloco do valor líquido */
       .liquido-box {{ 
           width: 100%; 
           border: 1px solid #000; 
@@ -114,7 +112,9 @@ def gerar_pdf_holerite(dados_func):
           margin-top: 10px; 
       }}
       .liquido-header {{ font-weight: bold; font-size: 11pt; }}
-      .liquido-extenso {{ font-size: 9pt; font-weight: normal; margin-top: 5px; text-transform: uppercase; }}
+      
+      /* Extenso jogado para fora, como subtexto */
+      .liquido-extenso {{ font-size: 8.5pt; font-weight: normal; margin-top: 6px; text-transform: uppercase; color: #4b5563; padding-left: 2px; }}
       
     </style>
     </head>
@@ -163,9 +163,11 @@ def gerar_pdf_holerite(dados_func):
             <span style="float: right;">{formatar_moeda(liquido)}</span>
             <div style="clear: both;"></div>
         </div>
-        <div class="liquido-extenso">
-            ({extenso})
-        </div>
+      </div>
+      
+      <!-- Valor por extenso agora fica de fora do quadro cinza -->
+      <div class="liquido-extenso">
+          ({extenso})
       </div>
       
     </body>

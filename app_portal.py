@@ -163,7 +163,7 @@ if st.session_state.user_type is None:
             
         # ROTA FUNCIONÁRIO
         cpf_limpo = limpar_numeros(cpf_input)
-        arquivo_enc = f"{cpf_limpo}.enc"
+        arquivo_enc = f"arquivos/{cpf_limpo}.enc"
         
         if not os.path.exists(arquivo_enc):
             st.error("❌ Documento não encontrado para este CPF. Verifique se foi digitado corretamente.")

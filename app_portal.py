@@ -9,6 +9,7 @@ from weasyprint import HTML
 from cryptography.fernet import Fernet
 import glob
 from num2words import num2words
+import base64   
 
 st.set_page_config(page_title="Holerite - MedTem", page_icon="logo.png", layout="centered")
 
@@ -182,14 +183,31 @@ def gerar_pdf_holerite(dados_func):
 
 if st.session_state.user_type is None:
     # --- TELA 1: LOGIN ---
-    col_logo, col_tit = st.columns([1, 10], vertical_alignment="center")
+    import base64
     
-    col_logo.image("logo.png", width=45)
+    # Lê a imagem local e converte para código, garantindo a centralização no HTML
+    try:
+        with open("logo.png", "rb") as image_file:
+            logo_b64 = base64.b64encode(image_file.read()).decode()
+        img_html = f'<img src="data:image/png;base64,{logo_b64}" width="55">'
+    except Exception:
+        img_html = '📄' # Fallback caso o arquivo não seja encontrado
+
+    # Renderiza a logo e o título perfeitamente centralizados
+    st.markdown(f"""
+    <div style="text-align: center; margin-bottom: 15px;">
+        {img_html}
+        <h1 style="margin-top: 10px; margin-bottom: 0; padding-bottom: 0;">Holerite - MedTem</h1>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Substituímos o st.title por HTML para "puxar" o texto um pouco para cima e alinhar perfeitamente com a imagem
-    col_tit.markdown("<h1 style='margin-top: -35px; padding-bottom: 0;'>Holerite - MedTem</h1>", unsafe_allow_html=True)
-    
-    st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
+    # Subtítulo também centralizado para acompanhar o design
+    st.markdown(
+        "<p style='text-align: center; margin-bottom: 20px; color: #d1d5db;'>"
+        "Insira seus dados para acessar o demonstrativo de pagamento."
+        "</p>", 
+        unsafe_allow_html=True
+    )
 
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()

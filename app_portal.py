@@ -187,7 +187,7 @@ if st.session_state.user_type is None:
     col_logo.image("logo.png", width=45)
     
     # Substituímos o st.title por HTML para "puxar" o texto um pouco para cima e alinhar perfeitamente com a imagem
-    col_tit.markdown("<h1 style='margin-top: -20px; padding-bottom: 0;'>Holerite - MedTem</h1>", unsafe_allow_html=True)
+    col_tit.markdown("<h1 style='margin-top: -30px; padding-bottom: 0;'>Holerite - MedTem</h1>", unsafe_allow_html=True)
     
     st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 

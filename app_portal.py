@@ -183,8 +183,11 @@ def gerar_pdf_holerite(dados_func):
 if st.session_state.user_type is None:
     # --- TELA 1: LOGIN ---
     col_logo, col_tit = st.columns([1, 10], vertical_alignment="center")
-    col_logo.image("logo.png", width=45) # 45 pixels simula o tamanho exato de um emoji grande
-    col_tit.title("Holerite - MedTem")
+    
+    col_logo.image("logo.png", width=45)
+    
+    # Substituímos o st.title por HTML para "puxar" o texto um pouco para cima e alinhar perfeitamente com a imagem
+    col_tit.markdown("<h1 style='margin-top: -15px; padding-bottom: 0;'>Holerite - MedTem</h1>", unsafe_allow_html=True)
     
     st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 

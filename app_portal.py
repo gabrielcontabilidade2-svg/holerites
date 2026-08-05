@@ -177,13 +177,15 @@ if st.session_state.user_type is None:
                 json_descriptografado = f.decrypt(dados_cifrados).decode('utf-8')
                 func_encontrado = json.loads(json_descriptografado)
                 
-                # Validação da Data de Nascimento
-                dt_json = func_encontrado.get("data_nascimento", "")
-                if "-" in dt_json and len(dt_json) >= 10:
-                    partes = dt_json[:10].split("-")
-                    dt_json_comparacao = partes[2] + partes[1] + partes[0] if len(partes) == 3 else limpar_numeros(dt_json)
+                # --- VALIDAÇÃO BLINDADA DA DATA DE NASCIMENTO ---
+                dt_json = str(func_encontrado.get("data_nascimento", ""))
+                nums_json = limpar_numeros(dt_json)
+                
+                # Se tiver 8 dígitos e começar com 19 ou 20 (ex: 19910321), inverte para 21031991
+                if len(nums_json) == 8 and (nums_json.startswith("19") or nums_json.startswith("20")):
+                    dt_json_comparacao = nums_json[6:8] + nums_json[4:6] + nums_json[0:4]
                 else:
-                    dt_json_comparacao = limpar_numeros(dt_json)
+                    dt_json_comparacao = nums_json
                     
                 if dt_json_comparacao == limpar_numeros(dt_nasc_input):
                     st.session_state.user_type = "employee"

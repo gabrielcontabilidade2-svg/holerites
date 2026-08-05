@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 from weasyprint import HTML
 from cryptography.fernet import Fernet
+import glob
 
 st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="centered")
 
@@ -151,6 +152,41 @@ if st.session_state.user_type is None:
     st.title("📄 Portal de Holerites")
     st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 
+    # =========================================================
+    # 🛠️ MODO DIAGNÓSTICO (Remover após encontrar o erro)
+    # =========================================================
+    import glob
+    if st.checkbox("🛠️ Mostrar Diagnóstico (CPF x Data Nascimento)"):
+        st.warning("⚠️ Desative ou apague este bloco antes de liberar para os funcionários!")
+        arquivos_na_pasta = glob.glob("arquivos/*.enc")
+        
+        lista_diagnostico = []
+        if arquivos_na_pasta:
+            try:
+                chave_secreta = st.secrets["CHAVE_CRIPTO"]
+                f = Fernet(chave_secreta)
+                
+                for arq in arquivos_na_pasta:
+                    with open(arq, "rb") as arquivo:
+                        dados_cifrados = arquivo.read()
+                    
+                    json_desc = f.decrypt(dados_cifrados).decode('utf-8')
+                    func = json.loads(json_desc)
+                    
+                    lista_diagnostico.append({
+                        "Arquivo": os.path.basename(arq),
+                        "Nome": func.get("nome"),
+                        "CPF Cru": func.get("cpf"),
+                        "Data Nasc. Crua": func.get("data_nascimento")
+                    })
+                
+                st.dataframe(lista_diagnostico, use_container_width=True)
+            except Exception as e:
+                st.error(f"Erro ao descriptografar para diagnóstico: {e}")
+        else:
+            st.info("Nenhum arquivo .enc encontrado na pasta 'arquivos'.")
+    # =========================================================
+
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()
         dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991", type="password").strip()
@@ -178,18 +214,14 @@ if st.session_state.user_type is None:
                 json_descriptografado = f.decrypt(dados_cifrados).decode('utf-8')
                 func_encontrado = json.loads(json_descriptografado)
                 
-                # --- NOVO BLOCO COM DIAGNÓSTICO E TRAVA DE HORA ---
                 dt_json_cru = str(func_encontrado.get("data_nascimento", ""))
-                dt_json_somente_data = dt_json_cru[:10] # Pega só os 10 primeiros caracteres (ex: 1991-03-21)
+                dt_json_somente_data = dt_json_cru[:10]
                 nums_json = limpar_numeros(dt_json_somente_data)
                 
                 if len(nums_json) == 8 and (nums_json.startswith("19") or nums_json.startswith("20")):
                     dt_json_comparacao = nums_json[6:8] + nums_json[4:6] + nums_json[0:4]
                 else:
                     dt_json_comparacao = nums_json
-                
-                # Descomente a linha abaixo apenas para ver os valores na tela se continuar dando erro
-                # st.warning(f"DIAGNÓSTICO -> Veio do JSON: {dt_json_cru} | Extraiu: {nums_json} | Transformou para: {dt_json_comparacao} | Vc digitou: {limpar_numeros(dt_nasc_input)}")
                     
                 if dt_json_comparacao == limpar_numeros(dt_nasc_input):
                     st.session_state.user_type = "employee"

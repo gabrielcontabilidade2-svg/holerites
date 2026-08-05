@@ -12,7 +12,7 @@ st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="c
 
 # --- CONTROLE DE SESSÃO ---
 if "user_type" not in st.session_state:
-    st.session_state.user_type = None  # Pode ser 'admin', 'employee', ou None
+    st.session_state.user_type = None
     st.session_state.dados_func = None
 
 # --- BANCO DE DADOS LOCAL (SQLite) ---
@@ -141,6 +141,7 @@ def gerar_pdf_holerite(dados_func):
     """
     return HTML(string=html_content).write_pdf()
 
+
 # =====================================================================
 # INTERFACE PRINCIPAL
 # =====================================================================
@@ -152,7 +153,7 @@ if st.session_state.user_type is None:
 
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()
-        dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991").strip()
+        dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991", type="password").strip()
         submitted = st.form_submit_button("Consultar", use_container_width=True)
 
     if submitted:
@@ -177,15 +178,18 @@ if st.session_state.user_type is None:
                 json_descriptografado = f.decrypt(dados_cifrados).decode('utf-8')
                 func_encontrado = json.loads(json_descriptografado)
                 
-                # --- VALIDAÇÃO BLINDADA DA DATA DE NASCIMENTO ---
-                dt_json = str(func_encontrado.get("data_nascimento", ""))
-                nums_json = limpar_numeros(dt_json)
+                # --- NOVO BLOCO COM DIAGNÓSTICO E TRAVA DE HORA ---
+                dt_json_cru = str(func_encontrado.get("data_nascimento", ""))
+                dt_json_somente_data = dt_json_cru[:10] # Pega só os 10 primeiros caracteres (ex: 1991-03-21)
+                nums_json = limpar_numeros(dt_json_somente_data)
                 
-                # Se tiver 8 dígitos e começar com 19 ou 20 (ex: 19910321), inverte para 21031991
                 if len(nums_json) == 8 and (nums_json.startswith("19") or nums_json.startswith("20")):
                     dt_json_comparacao = nums_json[6:8] + nums_json[4:6] + nums_json[0:4]
                 else:
                     dt_json_comparacao = nums_json
+                
+                # Descomente a linha abaixo apenas para ver os valores na tela se continuar dando erro
+                # st.warning(f"DIAGNÓSTICO -> Veio do JSON: {dt_json_cru} | Extraiu: {nums_json} | Transformou para: {dt_json_comparacao} | Vc digitou: {limpar_numeros(dt_nasc_input)}")
                     
                 if dt_json_comparacao == limpar_numeros(dt_nasc_input):
                     st.session_state.user_type = "employee"
@@ -201,20 +205,31 @@ if st.session_state.user_type is None:
 elif st.session_state.user_type == "admin":
     # --- TELA 2: PAINEL ADMINISTRATIVO ---
     col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
-    col_titulo.title("🛡️ Painel Administrativo")
+    col_titulo.title("🛡️ Painel Admin")
     if col_sair.button("🚪 Sair", use_container_width=True):
         st.session_state.user_type = None
         st.rerun()
         
-    df_status = pd.read_sql_query("SELECT cpf, nome, competencia, status, data_registro FROM respostas ORDER BY data_registro DESC", conn)
-    
-    col_aprov, col_revis = st.columns(2)
-    with col_aprov:
-        st.success("✅ **Aprovados**")
-        st.dataframe(df_status[df_status['status'] == 'Aprovado'], hide_index=True, use_container_width=True)
-    with col_revis:
-        st.warning("⚠️ **Revisão Solicitada**")
-        st.dataframe(df_status[df_status['status'] == 'Revisão'], hide_index=True, use_container_width=True)
+    try:
+        df_status = pd.read_sql_query("SELECT cpf, nome, competencia, status, data_registro FROM respostas ORDER BY data_registro DESC", conn)
+        
+        col_aprov, col_revis = st.columns(2)
+        with col_aprov:
+            st.success("✅ **Aprovados**")
+            st.dataframe(df_status[df_status['status'] == 'Aprovado'], hide_index=True, use_container_width=True)
+        with col_revis:
+            st.warning("⚠️ **Revisão Solicitada**")
+            st.dataframe(df_status[df_status['status'] == 'Revisão'], hide_index=True, use_container_width=True)
+            
+    except Exception as e:
+        st.error(f"🔍 **DIAGNÓSTICO DE BANCO DE DADOS**\nOcorreu um erro ao ler as tabelas: `{e}`")
+        st.info("Isso acontece porque o servidor guardou a versão antiga da tabela. Clique abaixo para forçar a recriação.")
+        if st.button("🚨 Resetar e Recriar Banco de Dados", type="primary"):
+            c = conn.cursor()
+            c.execute("DROP TABLE IF EXISTS respostas")
+            conn.commit()
+            init_db() # Cria de novo com as colunas certas
+            st.success("Banco resetado com sucesso! Clique em 'Sair' e entre novamente.")
 
 
 elif st.session_state.user_type == "employee":
@@ -280,7 +295,7 @@ elif st.session_state.user_type == "employee":
 
     st.markdown("---")
     
-    # RENDERIZAÇÃO: LÍQUIDO (Fonte maior e negrito, fundo simples)
+    # RENDERIZAÇÃO: LÍQUIDO 
     st.markdown(f"""
     <div style="text-align: center; margin: 15px 0;">
         <div style="font-size: 1rem; text-transform: uppercase; opacity: 0.8;">Valor Líquido a Receber</div>

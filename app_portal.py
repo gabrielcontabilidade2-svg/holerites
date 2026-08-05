@@ -185,29 +185,24 @@ if st.session_state.user_type is None:
     # --- TELA 1: LOGIN ---
     import base64
     
-    # Lê a imagem local e converte para código, garantindo a centralização no HTML
+    # Lê a imagem local e converte para código
     try:
         with open("logo.png", "rb") as image_file:
             logo_b64 = base64.b64encode(image_file.read()).decode()
         img_html = f'<img src="data:image/png;base64,{logo_b64}" width="55">'
     except Exception:
-        img_html = '📄' # Fallback caso o arquivo não seja encontrado
+        img_html = '📄' 
 
-    # Renderiza a logo e o título perfeitamente centralizados
+    # Bloco ÚNICO agrupando Logo, Título e Subtítulo com espaçamentos cravados
     st.markdown(f"""
-    <div style="text-align: center; margin-bottom: 15px;">
+    <div style="text-align: center; margin-bottom: 25px;">
         {img_html}
-        <h1 style="margin-top: 10px; margin-bottom: 0; padding-bottom: 0;">Holerite - MedTem</h1>
+        <h1 style="margin: 10px 0 5px 0; padding: 0; line-height: 1.1; font-size: 2.2rem;">Holerite - MedTem</h1>
+        <p style="color: #d1d5db; margin: 0; padding: 0; font-size: 1rem; line-height: 1.4;">
+            Insira seus dados para acessar o demonstrativo de pagamento.
+        </p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Subtítulo também centralizado para acompanhar o design
-    st.markdown(
-        "<p style='text-align: center; margin-bottom: 20px; color: #d1d5db;'>"
-        "Insira seus dados para acessar o demonstrativo de pagamento."
-        "</p>", 
-        unsafe_allow_html=True
-    )
 
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()

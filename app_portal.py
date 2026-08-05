@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 import streamlit as st
 from weasyprint import HTML
+from cryptography.fernet import Fernet
 
 st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="centered")
 
@@ -189,10 +190,20 @@ if not st.session_state.autenticado:
             st.stop()
 
         try:
-            with open("dados_folha.json", "r", encoding="utf-8") as f:
-                base_folha = json.load(f)
-        except FileNotFoundError:
-            st.error("Base de dados de folha não encontrada (dados_folha.json).")
+            # Lê o arquivo criptografado
+            with open("dados_folha.enc", "rb") as arquivo:
+                dados_cifrados = arquivo.read()
+            
+            # Puxa a chave mestra dos "Secrets" do painel do Streamlit Cloud
+            chave_secreta = st.secrets["CHAVE_CRIPTO"]
+            f = Fernet(chave_secreta)
+            
+            # Descriptografa e carrega o JSON em memória
+            json_descriptografado = f.decrypt(dados_cifrados).decode('utf-8')
+            base_folha = json.loads(json_descriptografado)
+            
+        except Exception as e:
+            st.error("Falha de segurança ou arquivo de dados não encontrado (dados_folha.enc).")
             st.stop()
 
         func_encontrado = None

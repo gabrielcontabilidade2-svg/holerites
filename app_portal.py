@@ -195,7 +195,7 @@ if not st.session_state.autenticado:
                 dados_cifrados = arquivo.read()
             
             # Puxa a chave mestra dos "Secrets" do painel do Streamlit Cloud
-            chave_secreta = st.secrets["CHAVE_CRIPTO"]
+            chave_secreta = st.secrets["4ndjYItupkewSr3jbl7GBAZyi_PDRQJYpbsHFtkMPHA="]
             f = Fernet(chave_secreta)
             
             # Descriptografa e carrega o JSON em memória

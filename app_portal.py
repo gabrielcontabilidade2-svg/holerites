@@ -1,16 +1,18 @@
 import json
 import sqlite3
 import re
+import os
 from datetime import datetime
+import pandas as pd
 import streamlit as st
 from weasyprint import HTML
 from cryptography.fernet import Fernet
 
 st.set_page_config(page_title="Portal de Holerites", page_icon="📑", layout="centered")
 
-# --- CONTROLE DE SESSÃO (LOGIN) ---
-if "autenticado" not in st.session_state:
-    st.session_state.autenticado = False
+# --- CONTROLE DE SESSÃO ---
+if "user_type" not in st.session_state:
+    st.session_state.user_type = None  # Pode ser 'admin', 'employee', ou None
     st.session_state.dados_func = None
 
 # --- BANCO DE DADOS LOCAL (SQLite) ---
@@ -20,35 +22,31 @@ def init_db():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS respostas (
             cpf TEXT,
+            nome TEXT,
             competencia TEXT,
             status TEXT,
-            motivo_contestacao TEXT,
             data_registro TEXT,
             PRIMARY KEY (cpf, competencia)
         )
     """)
     conn.commit()
-    conn.close()
+    return conn
 
-def salvar_resposta(cpf: str, competencia: str, status: str, motivo: str = ""):
-    conn = sqlite3.connect("status_holerites.db")
+conn = init_db()
+
+def salvar_resposta(cpf: str, nome: str, competencia: str, status: str):
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT OR REPLACE INTO respostas (cpf, competencia, status, motivo_contestacao, data_registro)
+        INSERT OR REPLACE INTO respostas (cpf, nome, competencia, status, data_registro)
         VALUES (?, ?, ?, ?, ?)
-    """, (cpf, competencia, status, motivo, datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    """, (cpf, nome, competencia, status, datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
     conn.commit()
-    conn.close()
 
 def obter_status(cpf: str, competencia: str):
-    conn = sqlite3.connect("status_holerites.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT status, motivo_contestacao FROM respostas WHERE cpf = ? AND competencia = ?", (cpf, competencia))
+    cursor.execute("SELECT status FROM respostas WHERE cpf = ? AND competencia = ?", (cpf, competencia))
     res = cursor.fetchone()
-    conn.close()
-    return res
-
-init_db()
+    return res[0] if res else None
 
 # --- FUNÇÕES DE APOIO ---
 def limpar_numeros(texto: str) -> str:
@@ -66,20 +64,10 @@ def gerar_pdf_holerite(dados_func):
     
     for v in dados_func["verbas"]:
         if v["tipo"] == "provento":
-            proventos_html += f"""
-            <tr>
-                <td>{v['descricao']}</td>
-                <td style='text-align: right; color: #065f46;'>{formatar_moeda(v['valor'])}</td>
-            </tr>
-            """
+            proventos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right; color: #065f46;'>{formatar_moeda(v['valor'])}</td></tr>"
             proventos_tot += v["valor"]
         elif v["tipo"] == "desconto":
-            descontos_html += f"""
-            <tr>
-                <td>{v['descricao']}</td>
-                <td style='text-align: right; color: #991b1b;'>{formatar_moeda(v['valor'])}</td>
-            </tr>
-            """
+            descontos_html += f"<tr><td>{v['descricao']}</td><td style='text-align: right; color: #991b1b;'>{formatar_moeda(v['valor'])}</td></tr>"
             descontos_tot += v["valor"]
             
     liquido = proventos_tot - descontos_tot
@@ -115,41 +103,26 @@ def gerar_pdf_holerite(dados_func):
         <strong>CPF:</strong> {dados_func['cpf']} | <strong>Chave PIX:</strong> {dados_func.get('pix', 'Não cadastrada')}
       </div>
       
-      <!-- TABELA PROVENTOS -->
       <table>
         <thead>
-          <tr>
-            <th style="width:70%;">DESCRIÇÃO DOS PROVENTOS</th>
-            <th style="width:30%; text-align:right;">VALOR</th>
-          </tr>
+          <tr><th style="width:70%;">DESCRIÇÃO DOS PROVENTOS</th><th style="width:30%; text-align:right;">VALOR</th></tr>
         </thead>
         <tbody>
           {proventos_html}
-          <tr class="totals-row">
-            <td style="text-align: right;">TOTAL PROVENTOS:</td>
-            <td style="text-align: right;">{formatar_moeda(proventos_tot)}</td>
-          </tr>
+          <tr class="totals-row"><td style="text-align: right;">TOTAL PROVENTOS:</td><td style="text-align: right;">{formatar_moeda(proventos_tot)}</td></tr>
         </tbody>
       </table>
 
-      <!-- TABELA DESCONTOS -->
       <table>
         <thead>
-          <tr>
-            <th style="width:70%;">DESCRIÇÃO DOS DESCONTOS</th>
-            <th style="width:30%; text-align:right;">VALOR</th>
-          </tr>
+          <tr><th style="width:70%;">DESCRIÇÃO DOS DESCONTOS</th><th style="width:30%; text-align:right;">VALOR</th></tr>
         </thead>
         <tbody>
           {descontos_html}
-          <tr class="totals-row">
-            <td style="text-align: right;">TOTAL DESCONTOS:</td>
-            <td style="text-align: right;">{formatar_moeda(descontos_tot)}</td>
-          </tr>
+          <tr class="totals-row"><td style="text-align: right;">TOTAL DESCONTOS:</td><td style="text-align: right;">{formatar_moeda(descontos_tot)}</td></tr>
         </tbody>
       </table>
 
-      <!-- VALOR LÍQUIDO -->
       <div class="liquido-box">
         <table class="liquido-table">
             <tr>
@@ -168,48 +141,44 @@ def gerar_pdf_holerite(dados_func):
     """
     return HTML(string=html_content).write_pdf()
 
-
 # =====================================================================
 # INTERFACE PRINCIPAL
 # =====================================================================
 
-if not st.session_state.autenticado:
+if st.session_state.user_type is None:
     # --- TELA 1: LOGIN ---
     st.title("📄 Portal de Holerites")
     st.write("Insira seus dados para acessar o demonstrativo de pagamento.")
 
     with st.form("login_form"):
-        cpf_input = st.text_input("CPF:", max_chars=11, placeholder="Digite apenas os 11 números", help="Não precisa colocar pontos ou traços.")
-        dt_nasc_input = st.text_input("Data de Nascimento:", max_chars=8, placeholder="DDMMAAAA (Apenas números)", help="Exemplo: Para 21/03/1991, digite 21031991")
-        submitted = st.form_submit_button("Consultar Holerite", use_container_width=True)
+        cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()
+        dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991").strip()
+        submitted = st.form_submit_button("Consultar", use_container_width=True)
 
     if submitted:
+        # ROTA ADMIN
+        if cpf_input.lower() == "admin" and dt_nasc_input == "1234":
+            st.session_state.user_type = "admin"
+            st.rerun()
+            
+        # ROTA FUNCIONÁRIO
         cpf_limpo = limpar_numeros(cpf_input)
-        if len(cpf_limpo) != 11:
-            st.error("Por favor, insira um CPF válido com 11 dígitos.")
-            st.stop()
-
-        try:
-            # Lê o arquivo criptografado
-            with open("dados_folha.enc", "rb") as arquivo:
-                dados_cifrados = arquivo.read()
-            
-            # Puxa a chave mestra dos "Secrets" do painel do Streamlit Cloud
-            chave_secreta = st.secrets["CHAVE_CRIPTO"]
-            f = Fernet(chave_secreta)
-            
-            # Descriptografa e carrega o JSON em memória
-            json_descriptografado = f.decrypt(dados_cifrados).decode('utf-8')
-            base_folha = json.loads(json_descriptografado)
-            
-        except Exception as e:
-            st.error("Falha de segurança ou arquivo de dados não encontrado (dados_folha.enc).")
-            st.stop()
-
-        func_encontrado = None
-        for item in base_folha:
-            if item["cpf"] == cpf_limpo:
-                dt_json = item.get("data_nascimento", "")
+        arquivo_enc = f"{cpf_limpo}.enc"
+        
+        if not os.path.exists(arquivo_enc):
+            st.error("❌ Documento não encontrado para este CPF. Verifique se foi digitado corretamente.")
+        else:
+            try:
+                with open(arquivo_enc, "rb") as arquivo:
+                    dados_cifrados = arquivo.read()
+                
+                chave_secreta = st.secrets["CHAVE_CRIPTO"]
+                f = Fernet(chave_secreta)
+                json_descriptografado = f.decrypt(dados_cifrados).decode('utf-8')
+                func_encontrado = json.loads(json_descriptografado)
+                
+                # Validação da Data de Nascimento
+                dt_json = func_encontrado.get("data_nascimento", "")
                 if "-" in dt_json and len(dt_json) >= 10:
                     partes = dt_json[:10].split("-")
                     dt_json_comparacao = partes[2] + partes[1] + partes[0] if len(partes) == 3 else limpar_numeros(dt_json)
@@ -217,25 +186,44 @@ if not st.session_state.autenticado:
                     dt_json_comparacao = limpar_numeros(dt_json)
                     
                 if dt_json_comparacao == limpar_numeros(dt_nasc_input):
-                    func_encontrado = item
-                    break
+                    st.session_state.user_type = "employee"
+                    st.session_state.dados_func = func_encontrado
+                    st.rerun()
+                else:
+                    st.error("❌ Data de Nascimento incorreta.")
+                    
+            except Exception as e:
+                st.error(f"Erro ao processar o arquivo seguro: {repr(e)}")
 
-        if not func_encontrado:
-            st.error("❌ Dados incorretos ou holerite não disponível para este CPF/Data de Nascimento.")
-        else:
-            st.session_state.autenticado = True
-            st.session_state.dados_func = func_encontrado
-            st.rerun()
 
-else:
-    # --- TELA 2: VISUALIZAÇÃO DO HOLERITE ---
+elif st.session_state.user_type == "admin":
+    # --- TELA 2: PAINEL ADMINISTRATIVO ---
+    col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
+    col_titulo.title("🛡️ Painel Administrativo")
+    if col_sair.button("🚪 Sair", use_container_width=True):
+        st.session_state.user_type = None
+        st.rerun()
+        
+    df_status = pd.read_sql_query("SELECT cpf, nome, competencia, status, data_registro FROM respostas ORDER BY data_registro DESC", conn)
+    
+    col_aprov, col_revis = st.columns(2)
+    with col_aprov:
+        st.success("✅ **Aprovados**")
+        st.dataframe(df_status[df_status['status'] == 'Aprovado'], hide_index=True, use_container_width=True)
+    with col_revis:
+        st.warning("⚠️ **Revisão Solicitada**")
+        st.dataframe(df_status[df_status['status'] == 'Revisão'], hide_index=True, use_container_width=True)
+
+
+elif st.session_state.user_type == "employee":
+    # --- TELA 3: VISUALIZAÇÃO DO HOLERITE ---
     func_dados = st.session_state.dados_func
     status_atual = obter_status(func_dados["cpf"], func_dados["competencia"])
     
     col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
     col_titulo.title(f"Holerite - {func_dados['competencia']}")
     if col_sair.button("🚪 Sair", use_container_width=True):
-        st.session_state.autenticado = False
+        st.session_state.user_type = None
         st.session_state.dados_func = None
         st.rerun()
     
@@ -243,7 +231,6 @@ else:
     st.write(f"**Cargo:** {func_dados['cargo']}")
     st.write(f"**PIX Cadastrado:** {func_dados.get('pix', 'Não cadastrada')}")
     
-    # Processamento e segregação das verbas
     proventos_list = [v for v in func_dados["verbas"] if v["tipo"] == "provento"]
     descontos_list = [v for v in func_dados["verbas"] if v["tipo"] == "desconto"]
     
@@ -253,7 +240,7 @@ else:
 
     st.markdown("<br>", unsafe_allow_html=True)
     
-    # RENDERIZAÇÃO: PROVENTOS (Efeito Zebra e Cabeçalho Verde)
+    # RENDERIZAÇÃO: PROVENTOS (Efeito Zebra)
     st.markdown("### <span style='color: #2ecc71;'>Proventos</span>", unsafe_allow_html=True)
     for i, v in enumerate(proventos_list):
         bg_color = "rgba(128, 128, 128, 0.08)" if i % 2 == 0 else "transparent"
@@ -265,14 +252,14 @@ else:
             unsafe_allow_html=True
         )
     st.markdown(
-        f"<div style='text-align: right; font-weight: bold; font-size: 1.15em; padding: 12px 12px 0 0;'>"
+        f"<div style='text-align: right; font-weight: bold; font-size: 1.1em; padding: 10px 12px 0 0;'>"
         f"Total Proventos: {formatar_moeda(proventos)}</div>", 
         unsafe_allow_html=True
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # RENDERIZAÇÃO: DESCONTOS (Efeito Zebra e Cabeçalho Vermelho)
+    # RENDERIZAÇÃO: DESCONTOS (Efeito Zebra)
     st.markdown("### <span style='color: #e74c3c;'>Descontos</span>", unsafe_allow_html=True)
     for i, v in enumerate(descontos_list):
         bg_color = "rgba(128, 128, 128, 0.08)" if i % 2 == 0 else "transparent"
@@ -284,28 +271,28 @@ else:
             unsafe_allow_html=True
         )
     st.markdown(
-        f"<div style='text-align: right; font-weight: bold; font-size: 1.15em; padding: 12px 12px 0 0;'>"
+        f"<div style='text-align: right; font-weight: bold; font-size: 1.1em; padding: 10px 12px 0 0;'>"
         f"Total Descontos: {formatar_moeda(descontos)}</div>", 
         unsafe_allow_html=True
     )
 
     st.markdown("---")
     
-    # RENDERIZAÇÃO: LÍQUIDO EM DESTAQUE LIMPO
+    # RENDERIZAÇÃO: LÍQUIDO (Fonte maior e negrito, fundo simples)
     st.markdown(f"""
     <div style="text-align: center; margin: 15px 0;">
         <div style="font-size: 1rem; text-transform: uppercase; opacity: 0.8;">Valor Líquido a Receber</div>
-        <div style="font-size: 2.3rem; font-weight: bold; margin-top: 5px;">{formatar_moeda(liquido)}</div>
+        <div style="font-size: 2.2rem; font-weight: bold; margin-top: 5px;">{formatar_moeda(liquido)}</div>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("---")
 
     # --- LÓGICA DE VALIDAÇÃO E DOWNLOAD ---
-    if status_atual and status_atual[0] == "Em Revisão":
-        st.error(f"⚠️ **Pedido de Revisão Registrado**\n\nMotivo: {status_atual[1]}\n\nAguarde o retorno do RH.")
+    if status_atual == "Revisão":
+        st.warning("⚠️ Você solicitou a revisão deste documento. O RH entrará em contato em breve.")
         
-    elif status_atual and status_atual[0] == "Aprovado":
+    elif status_atual == "Aprovado":
         st.success("✅ Recibo validado eletronicamente.")
         pdf_bytes = gerar_pdf_holerite(func_dados)
         st.download_button(
@@ -323,15 +310,10 @@ else:
 
         with col_aprov:
             if st.button("✅ Confirmar Valores", use_container_width=True, type="primary"):
-                salvar_resposta(func_dados["cpf"], func_dados["competencia"], "Aprovado")
+                salvar_resposta(func_dados["cpf"], func_dados["nome"], func_dados["competencia"], "Aprovado")
                 st.rerun()
 
         with col_revis:
-            with st.popover("❌ Solicitar Revisão", use_container_width=True):
-                motivo = st.text_area("Descreva a divergência encontrada:")
-                if st.button("Enviar"):
-                    if motivo.strip():
-                        salvar_resposta(func_dados["cpf"], func_dados["competencia"], "Em Revisão", motivo)
-                        st.rerun()
-                    else:
-                        st.warning("Descreva o motivo antes de enviar.")
+            if st.button("⚠️ Solicitar Revisão", use_container_width=True):
+                salvar_resposta(func_dados["cpf"], func_dados["nome"], func_dados["competencia"], "Revisão")
+                st.rerun()

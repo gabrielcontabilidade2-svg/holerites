@@ -1,15 +1,15 @@
 import json
-import sqlite3
 import re
 import os
+import hashlib
 from datetime import datetime
 import pandas as pd
 import streamlit as st
 from weasyprint import HTML
 from cryptography.fernet import Fernet
-import glob
 from num2words import num2words
-import base64   
+import base64
+from supabase import create_client, Client
 
 st.set_page_config(page_title="Holerite - MedTem", page_icon="logo.png", layout="centered")
 
@@ -17,39 +17,40 @@ st.set_page_config(page_title="Holerite - MedTem", page_icon="logo.png", layout=
 if "user_type" not in st.session_state:
     st.session_state.user_type = None
     st.session_state.dados_func = None
+    st.session_state.hash_arquivo = None
 
-# --- BANCO DE DADOS LOCAL (SQLite) ---
-def init_db():
-    conn = sqlite3.connect("status_holerites.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS respostas (
-            cpf TEXT,
-            nome TEXT,
-            competencia TEXT,
-            status TEXT,
-            data_registro TEXT,
-            PRIMARY KEY (cpf, competencia)
-        )
-    """)
-    conn.commit()
-    return conn
+# --- BANCO DE DADOS EM NUVEM (Supabase) ---
+@st.cache_resource
+def init_connection() -> Client:
+    url = st.secrets["SUPABASE_URL"]
+    key = st.secrets["SUPABASE_KEY"]
+    return create_client(url, key)
 
-conn = init_db()
+supabase = init_connection()
 
-def salvar_resposta(cpf: str, nome: str, competencia: str, status: str):
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT OR REPLACE INTO respostas (cpf, nome, competencia, status, data_registro)
-        VALUES (?, ?, ?, ?, ?)
-    """, (cpf, nome, competencia, status, datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
-    conn.commit()
+def salvar_resposta(cpf: str, nome: str, competencia: str, status: str, hash_arquivo: str):
+    supabase.table("respostas").upsert({
+        "cpf": cpf,
+        "nome": nome,
+        "competencia": competencia,
+        "status": status,
+        "hash_arquivo": hash_arquivo,
+        "data_registro": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    }).execute()
 
-def obter_status(cpf: str, competencia: str):
-    cursor = conn.cursor()
-    cursor.execute("SELECT status FROM respostas WHERE cpf = ? AND competencia = ?", (cpf, competencia))
-    res = cursor.fetchone()
-    return res[0] if res else None
+def obter_status(cpf: str, competencia: str, hash_atual: str):
+    resposta = supabase.table("respostas").select("status, hash_arquivo").eq("cpf", cpf).eq("competencia", competencia).execute()
+    
+    if len(resposta.data) > 0:
+        banco_hash = resposta.data[0].get("hash_arquivo")
+        banco_status = resposta.data[0].get("status")
+        
+        # Se o hash do arquivo mudou, a aprovação antiga é invalidada (retorna None)
+        if banco_hash != hash_atual:
+            return None
+        return banco_status
+        
+    return None
 
 # --- FUNÇÕES DE APOIO ---
 def limpar_numeros(texto: str) -> str:
@@ -57,6 +58,14 @@ def limpar_numeros(texto: str) -> str:
 
 def formatar_moeda(valor: float) -> str:
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+def gerar_hash_arquivo(caminho_arquivo: str) -> str:
+    """Gera uma assinatura MD5 única para o arquivo. Se o conteúdo mudar, o hash muda."""
+    hasher = hashlib.md5()
+    with open(caminho_arquivo, 'rb') as afile:
+        buf = afile.read()
+        hasher.update(buf)
+    return hasher.hexdigest()
 
 # --- GERADOR DE PDF DINÂMICO ---
 def gerar_pdf_holerite(dados_func):
@@ -75,7 +84,6 @@ def gerar_pdf_holerite(dados_func):
             
     liquido = proventos_tot - descontos_tot
 
-    # Converte o valor numérico para extenso em reais (pt-BR)
     try:
         extenso = num2words(liquido, lang='pt_BR', to='currency').upper()
     except Exception:
@@ -90,33 +98,16 @@ def gerar_pdf_holerite(dados_func):
       @page {{ size: A4; margin: 15mm; background-color: #ffffff; }}
       body {{ font-family: Helvetica, sans-serif; font-size: 10pt; color: #111827; }}
       .header {{ width: 100%; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; }}
-      
-      /* Aumentado o line-height para não ficar embolado e separado em linhas */
       .info-box {{ width: 100%; margin-bottom: 20px; line-height: 1.6; font-size: 10.5pt; }}
-      
       table {{ width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1px solid #000; }}
       th {{ background-color: #f3f4f6; color: #000; padding: 8px; font-size: 9pt; text-transform: uppercase; text-align: left; border-bottom: 1px solid #000; font-weight: bold; }}
       td {{ padding: 8px; border-bottom: 1px solid #e5e7eb; font-size: 9.5pt; }}
-      
-      /* Configuração dos totais em negrito e coloridos */
       .totals-row td {{ font-weight: bold; background-color: #f9fafb; border-top: 1px solid #000; border-bottom: none; }}
       .total-prov {{ color: #065f46; }}
       .total-desc {{ color: #991b1b; }}
-      
-      /* Bloco do valor líquido */
-      .liquido-box {{ 
-          width: 100%; 
-          border: 1px solid #000; 
-          background-color: #e5e7eb; 
-          padding: 12px; 
-          box-sizing: border-box;
-          margin-top: 10px; 
-      }}
+      .liquido-box {{ width: 100%; border: 1px solid #000; background-color: #e5e7eb; padding: 12px; box-sizing: border-box; margin-top: 10px; }}
       .liquido-header {{ font-weight: bold; font-size: 11pt; }}
-      
-      /* Extenso jogado para fora, como subtexto */
       .liquido-extenso {{ font-size: 8.5pt; font-weight: normal; margin-top: 6px; text-transform: uppercase; color: #4b5563; padding-left: 2px; }}
-      
     </style>
     </head>
     <body>
@@ -166,16 +157,13 @@ def gerar_pdf_holerite(dados_func):
         </div>
       </div>
       
-      <!-- Valor por extenso agora fica de fora do quadro cinza -->
       <div class="liquido-extenso">
           ({extenso})
       </div>
-      
     </body>
     </html>
     """
     return HTML(string=html_content).write_pdf()
-
 
 # =====================================================================
 # INTERFACE PRINCIPAL
@@ -183,9 +171,6 @@ def gerar_pdf_holerite(dados_func):
 
 if st.session_state.user_type is None:
     # --- TELA 1: LOGIN ---
-    import base64
-    
-    # Lê a imagem local e converte para código
     try:
         with open("logo.png", "rb") as image_file:
             logo_b64 = base64.b64encode(image_file.read()).decode()
@@ -193,7 +178,6 @@ if st.session_state.user_type is None:
     except Exception:
         img_html = '📄' 
 
-    # Bloco ÚNICO agrupando Logo, Título e Subtítulo com espaçamentos cravados
     st.markdown(f"""
     <div style="text-align: center; margin-bottom: 25px;">
         {img_html}
@@ -223,6 +207,9 @@ if st.session_state.user_type is None:
             st.error("❌ Documento não encontrado para este CPF. Verifique se foi digitado corretamente.")
         else:
             try:
+                # 1. Gera o hash do arquivo ANTES de abrir para ler os dados
+                meu_hash = gerar_hash_arquivo(arquivo_enc)
+                
                 with open(arquivo_enc, "rb") as arquivo:
                     dados_cifrados = arquivo.read()
                 
@@ -243,6 +230,7 @@ if st.session_state.user_type is None:
                 if dt_json_comparacao == limpar_numeros(dt_nasc_input):
                     st.session_state.user_type = "employee"
                     st.session_state.dados_func = func_encontrado
+                    st.session_state.hash_arquivo = meu_hash # Salva o hash na sessão
                     st.rerun()
                 else:
                     st.error("❌ Data de Nascimento incorreta.")
@@ -260,37 +248,39 @@ elif st.session_state.user_type == "admin":
         st.rerun()
         
     try:
-        df_status = pd.read_sql_query("SELECT cpf, nome, competencia, status, data_registro FROM respostas ORDER BY data_registro DESC", conn)
+        # Puxa os dados direto do Supabase
+        resposta_db = supabase.table("respostas").select("cpf, nome, competencia, status, data_registro").order("data_registro", desc=True).execute()
+        df_status = pd.DataFrame(resposta_db.data)
         
-        col_aprov, col_revis = st.columns(2)
-        with col_aprov:
-            st.success("✅ **Aprovados**")
-            st.dataframe(df_status[df_status['status'] == 'Aprovado'], hide_index=True, use_container_width=True)
-        with col_revis:
-            st.warning("⚠️ **Revisão Solicitada**")
-            st.dataframe(df_status[df_status['status'] == 'Revisão'], hide_index=True, use_container_width=True)
+        if not df_status.empty:
+            col_aprov, col_revis = st.columns(2)
+            with col_aprov:
+                st.success("✅ **Aprovados**")
+                st.dataframe(df_status[df_status['status'] == 'Aprovado'], hide_index=True, use_container_width=True)
+            with col_revis:
+                st.warning("⚠️ **Revisão Solicitada**")
+                st.dataframe(df_status[df_status['status'] == 'Revisão'], hide_index=True, use_container_width=True)
+        else:
+            st.info("Nenhuma resposta registrada até o momento.")
             
     except Exception as e:
-        st.error(f"🔍 **DIAGNÓSTICO DE BANCO DE DADOS**\nOcorreu um erro ao ler as tabelas: `{e}`")
-        st.info("Isso acontece porque o servidor guardou a versão antiga da tabela. Clique abaixo para forçar a recriação.")
-        if st.button("🚨 Resetar e Recriar Banco de Dados", type="primary"):
-            c = conn.cursor()
-            c.execute("DROP TABLE IF EXISTS respostas")
-            conn.commit()
-            init_db() # Cria de novo com as colunas certas
-            st.success("Banco resetado com sucesso! Clique em 'Sair' e entre novamente.")
+        st.error(f"🔍 **ERRO DE CONEXÃO COM SUPABASE**\n`{e}`")
 
 
 elif st.session_state.user_type == "employee":
     # --- TELA 3: VISUALIZAÇÃO DO HOLERITE ---
     func_dados = st.session_state.dados_func
-    status_atual = obter_status(func_dados["cpf"], func_dados["competencia"])
+    meu_hash = st.session_state.hash_arquivo
+    
+    # Valida no banco usando o hash. Se o arquivo foi substituído, isso retorna None automaticamente.
+    status_atual = obter_status(func_dados["cpf"], func_dados["competencia"], meu_hash)
     
     col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
     col_titulo.title(f"Holerite - {func_dados['competencia']}")
     if col_sair.button("🚪 Sair", use_container_width=True):
         st.session_state.user_type = None
         st.session_state.dados_func = None
+        st.session_state.hash_arquivo = None
         st.rerun()
     
     st.write(f"**Funcionário:** {func_dados['nome']}")
@@ -376,10 +366,10 @@ elif st.session_state.user_type == "employee":
 
         with col_aprov:
             if st.button("✅ Confirmar Valores", use_container_width=True, type="primary"):
-                salvar_resposta(func_dados["cpf"], func_dados["nome"], func_dados["competencia"], "Aprovado")
+                salvar_resposta(func_dados["cpf"], func_dados["nome"], func_dados["competencia"], "Aprovado", meu_hash)
                 st.rerun()
 
         with col_revis:
             if st.button("⚠️ Solicitar Revisão", use_container_width=True):
-                salvar_resposta(func_dados["cpf"], func_dados["nome"], func_dados["competencia"], "Revisão")
+                salvar_resposta(func_dados["cpf"], func_dados["nome"], func_dados["competencia"], "Revisão", meu_hash)
                 st.rerun()

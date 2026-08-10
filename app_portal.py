@@ -2,7 +2,7 @@ import json
 import re
 import os
 import hashlib
-from datetime import datetime
+from datetime import datetime, date
 import pandas as pd
 import streamlit as st
 from weasyprint import HTML
@@ -188,9 +188,20 @@ if st.session_state.user_type is None:
     </div>
     """, unsafe_allow_html=True)
 
+    # Listas de referência para os filtros
+    MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+    mes_atual = date.today().month
+    ano_atual = date.today().year
+
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()
         dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991", type="password").strip()
+        
+        # Caixas de seleção para a competência
+        col_m, col_a = st.columns(2)
+        mes_input = col_m.selectbox("Mês Referência", MESES, index=mes_atual-1)
+        ano_input = col_a.selectbox("Ano Referência", range(2024, 2031), index=ano_atual-2024)
+        
         submitted = st.form_submit_button("Consultar", use_container_width=True)
 
     if submitted:
@@ -201,13 +212,17 @@ if st.session_state.user_type is None:
             
         # ROTA FUNCIONÁRIO
         cpf_limpo = limpar_numeros(cpf_input)
-        arquivo_enc = f"arquivos/{cpf_limpo}.enc"
+        
+        # Constrói o sufixo do arquivo (ex: 082026)
+        mes_num = MESES.index(mes_input) + 1
+        competencia_arquivo = f"{mes_num:02d}{ano_input}"
+        arquivo_enc = f"arquivos/{cpf_limpo}_{competencia_arquivo}.enc"
         
         if not os.path.exists(arquivo_enc):
-            st.error("❌ Documento não encontrado para este CPF. Verifique se foi digitado corretamente.")
+            st.error(f"❌ Documento não encontrado para a competência {mes_input}/{ano_input}. Verifique se a data está correta.")
         else:
             try:
-                # 1. Gera o hash do arquivo ANTES de abrir para ler os dados
+                # O restante do processo de descriptografia e hash permanece intacto
                 meu_hash = gerar_hash_arquivo(arquivo_enc)
                 
                 with open(arquivo_enc, "rb") as arquivo:
@@ -230,7 +245,7 @@ if st.session_state.user_type is None:
                 if dt_json_comparacao == limpar_numeros(dt_nasc_input):
                     st.session_state.user_type = "employee"
                     st.session_state.dados_func = func_encontrado
-                    st.session_state.hash_arquivo = meu_hash # Salva o hash na sessão
+                    st.session_state.hash_arquivo = meu_hash
                     st.rerun()
                 else:
                     st.error("❌ Data de Nascimento incorreta.")
@@ -248,11 +263,17 @@ elif st.session_state.user_type == "admin":
         st.rerun()
         
     try:
-        # Puxa os dados direto do Supabase
         resposta_db = supabase.table("respostas").select("cpf, nome, competencia, status, data_registro").order("data_registro", desc=True).execute()
         df_status = pd.DataFrame(resposta_db.data)
         
         if not df_status.empty:
+            # Filtro dinâmico por competência
+            lista_comps = ["Todas"] + list(df_status["competencia"].unique())
+            filtro_comp = st.selectbox("📅 Filtrar por Competência", lista_comps)
+            
+            if filtro_comp != "Todas":
+                df_status = df_status[df_status["competencia"] == filtro_comp]
+            
             col_aprov, col_revis = st.columns(2)
             with col_aprov:
                 st.success("✅ **Aprovados**")

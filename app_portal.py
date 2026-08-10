@@ -214,7 +214,7 @@ if st.session_state.user_type is None:
         mes_input = col_m.selectbox("Mês Referência", MESES, index=mes_padrao-1)
         ano_input = col_a.selectbox("Ano Referência", range(2024, 2036), index=indice_ano)
         
-        submitted = st.form_submit_button("Consultar", use_container_width=True)
+        submitted = st.form_submit_button("Consultar", type="primary", use_container_width=True)
 
     if submitted:
         # ROTA ADMIN

@@ -212,7 +212,7 @@ if st.session_state.user_type is None:
         # Caixas de seleção já iniciam no mês e ano anteriores
         col_m, col_a = st.columns(2)
         mes_input = col_m.selectbox("Mês Referência", MESES, index=mes_padrao-1)
-        ano_input = col_a.selectbox("Ano Referência", range(2026, 2036), index=indice_ano)
+        ano_input = col_a.selectbox("Ano Referência", range(2024, 2036), index=indice_ano)
         
         submitted = st.form_submit_button("Consultar", use_container_width=True)
 

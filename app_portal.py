@@ -10,6 +10,7 @@ from cryptography.fernet import Fernet
 from num2words import num2words
 import base64
 from supabase import create_client, Client
+import glob
 
 st.set_page_config(page_title="Holerite - MedTem", page_icon="logo.png", layout="centered")
 
@@ -225,16 +226,17 @@ if st.session_state.user_type is None:
         # ROTA FUNCIONÁRIO
         cpf_limpo = limpar_numeros(cpf_input)
         
-        # Constrói o sufixo do arquivo (ex: 082026)
-        mes_num = MESES.index(mes_input) + 1
-        competencia_arquivo = f"{mes_num:02d}{ano_input}"
-        arquivo_enc = f"arquivos/{cpf_limpo}_{competencia_arquivo}.enc"
+        competencia_arquivo = f"{mes_padrao:02d}{ano_input}"
         
-        if not os.path.exists(arquivo_enc):
-            st.error(f"❌ Documento não encontrado para a competência {mes_input}/{ano_input}. Verifique se a data está correta.")
+        # O asterisco (*) ignora o prefixo da empresa na busca
+        busca = glob.glob(f"arquivos/*_{cpf_limpo}_{competencia_arquivo}.enc")
+        
+        if not busca:
+            st.error(f"❌ Documento não encontrado para a competência {mes_padrao:02d}/{ano_input}. Verifique se a data está correta.")
         else:
+            arquivo_enc = busca[0] # Pega o arquivo exato que encontrou
             try:
-                # O restante do processo de descriptografia e hash permanece intacto
+                # Restante do código de descriptografia e hash permanece igualzinho...
                 meu_hash = gerar_hash_arquivo(arquivo_enc)
                 
                 with open(arquivo_enc, "rb") as arquivo:
@@ -275,29 +277,111 @@ elif st.session_state.user_type == "admin":
         st.rerun()
         
     try:
-        resposta_db = supabase.table("respostas").select("cpf, nome, competencia, status, data_registro").order("data_registro", desc=True).execute()
-        df_status = pd.DataFrame(resposta_db.data)
+        dic_empresas = {
+            "A": "DROGARIA PRIMEIRO PASSO",
+            "B": "DROGARIA TERCEIRO PASSO",
+            "C": "DROGARIA QUARTO PASSO"
+        }
         
-        if not df_status.empty:
-            # Filtro dinâmico por competência
-            lista_comps = ["Todas"] + list(df_status["competencia"].unique())
-            filtro_comp = st.selectbox("📅 Filtrar por Competência", lista_comps)
-            
-            if filtro_comp != "Todas":
-                df_status = df_status[df_status["competencia"] == filtro_comp]
-            
-            col_aprov, col_revis = st.columns(2)
-            with col_aprov:
-                st.success("✅ **Aprovados**")
-                st.dataframe(df_status[df_status['status'] == 'Aprovado'], hide_index=True, use_container_width=True)
-            with col_revis:
-                st.warning("⚠️ **Revisão Solicitada**")
-                st.dataframe(df_status[df_status['status'] == 'Revisão'], hide_index=True, use_container_width=True)
+        # 1. Busca todos os arquivos gerados no GitHub
+        import glob
+        todos_arquivos = glob.glob("arquivos/*.enc")
+        
+        # Extrai as competências únicas do nome dos arquivos para criar o filtro
+        competencias_disponiveis = set()
+        for arq in todos_arquivos:
+            partes = os.path.basename(arq).replace(".enc", "").split("_")
+            if len(partes) >= 3:
+                competencias_disponiveis.add(partes[2])
+                
+        lista_comps = sorted(list(competencias_disponiveis), reverse=True)
+        
+        if not lista_comps:
+            st.info("Nenhum arquivo de holerite encontrado na pasta 'arquivos'.")
         else:
-            st.info("Nenhuma resposta registrada até o momento.")
+            # Filtros na tela
+            c_filt1, c_filt2 = st.columns(2)
+            filtro_comp = c_filt1.selectbox("📅 Filtrar Competência", lista_comps)
             
+            lista_empresas = ["TODAS"] + list(dic_empresas.values())
+            filtro_empresa = c_filt2.selectbox("🏢 Filtrar Empresa", lista_empresas)
+            
+            # Formata a competência para cruzar com o banco (ex: 082026 -> Agosto/2026)
+            MESES_NOME = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+            mes_banco = MESES_NOME[int(filtro_comp[:2]) - 1]
+            comp_formatada_banco = f"{mes_banco}/{filtro_comp[2:]}"
+            
+            # 2. Busca respostas no Supabase
+            resposta_db = supabase.table("respostas").select("*").eq("competencia", comp_formatada_banco).execute()
+            supa_dict = {r["cpf"]: r for r in resposta_db.data} # Transforma em dicionário rápido
+            
+            # 3. Monta os dados cruzando arquivos físicos com o banco
+            chave_secreta = st.secrets["CHAVE_CRIPTO"]
+            f_crypto = Fernet(chave_secreta)
+            dados_painel = []
+            
+            # Filtra apenas os arquivos do mês selecionado para não sobrecarregar a memória
+            arquivos_filtrados = [a for a in todos_arquivos if a.endswith(f"_{filtro_comp}.enc")]
+            
+            for arq in arquivos_filtrados:
+                partes = os.path.basename(arq).replace(".enc", "").split("_")
+                if len(partes) < 3: continue
+                
+                pref, cpf_arq, comp_arq = partes[0], partes[1], partes[2]
+                empresa_nome = dic_empresas.get(pref, "Outra Empresa")
+                
+                if filtro_empresa != "TODAS" and empresa_nome != filtro_empresa:
+                    continue
+                    
+                supa_reg = supa_dict.get(cpf_arq)
+                
+                if supa_reg:
+                    status = supa_reg["status"]
+                    nome = supa_reg["nome"]
+                    data_reg = supa_reg["data_registro"]
+                else:
+                    # Se não tá no banco, é Pendente. Abre o arquivo para extrair o Nome.
+                    status = "Pendente"
+                    data_reg = "-"
+                    try:
+                        with open(arq, "rb") as arquivo_fisico:
+                            json_desc = f_crypto.decrypt(arquivo_fisico.read()).decode('utf-8')
+                            nome = json.loads(json_desc).get("nome", "Sem Nome")
+                    except Exception:
+                        nome = "Erro de leitura"
+                        
+                dados_painel.append({
+                    "Empresa": empresa_nome, "Nome": nome, "CPF": cpf_arq, "Status": status, "Data": data_reg
+                })
+                
+            df_painel = pd.DataFrame(dados_painel)
+            
+            # 4. Renderização das Três Listas
+            if not df_painel.empty:
+                df_aprov = df_painel[df_painel["Status"] == "Aprovado"].sort_values("Data", ascending=False)
+                df_rev = df_painel[df_painel["Status"] == "Revisão"].sort_values("Data", ascending=False)
+                df_pend = df_painel[df_painel["Status"] == "Pendente"].sort_values("Nome")
+                
+                c_res1, c_res2, c_res3 = st.columns(3)
+                
+                c_res1.success(f"✅ **Aprovados ({len(df_aprov)})**")
+                if not df_aprov.empty:
+                    c_res1.dataframe(df_aprov[["Nome", "Data"]], hide_index=True, use_container_width=True)
+                
+                c_res2.warning(f"⚠️ **Revisão ({len(df_rev)})**")
+                if not df_rev.empty:
+                    c_res2.dataframe(df_rev[["Nome", "Data"]], hide_index=True, use_container_width=True)
+                
+                c_res3.info(f"⏳ **Pendentes ({len(df_pend)})**")
+                if not df_pend.empty:
+                    # Mostra a empresa nos pendentes caso o filtro seja TODAS
+                    colunas_pend = ["Nome", "Empresa"] if filtro_empresa == "TODAS" else ["Nome"]
+                    c_res3.dataframe(df_pend[colunas_pend], hide_index=True, use_container_width=True)
+            else:
+                st.info("Nenhum funcionário encontrado para os filtros selecionados.")
+                
     except Exception as e:
-        st.error(f"🔍 **ERRO DE CONEXÃO COM SUPABASE**\n`{e}`")
+        st.error(f"🔍 **ERRO NO PAINEL ADMIN**\n`{e}`")
 
 
 elif st.session_state.user_type == "employee":

@@ -308,8 +308,19 @@ elif st.session_state.user_type == "employee":
     # Valida no banco usando o hash. Se o arquivo foi substituído, isso retorna None automaticamente.
     status_atual = obter_status(func_dados["cpf"], func_dados["competencia"], meu_hash)
     
-    col_titulo, col_sair = st.columns([4, 1], vertical_alignment="center")
-    col_titulo.title(f"Holerite - {func_dados['competencia']}")
+    # Reduzi levemente a proporção da coluna 1 para dar mais respiro ao botão Sair
+    col_titulo, col_sair = st.columns([3, 1], vertical_alignment="center")
+    
+    # Renderiza o título com HTML/CSS em duas linhas para não quebrar no celular
+    col_titulo.markdown(
+        f"""
+        <div style="line-height: 1.2; padding-top: 15px; padding-bottom: 15px;">
+            <h2 style="margin: 0; padding: 0; font-size: 2rem;">Holerite</h2>
+            <p style="margin: 0; padding: 0; font-size: 1.1rem; color: #6b7280;">Competência: {func_dados['competencia']}</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
     if col_sair.button("🚪 Sair", use_container_width=True):
         st.session_state.user_type = None
         st.session_state.dados_func = None

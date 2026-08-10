@@ -190,17 +190,29 @@ if st.session_state.user_type is None:
 
     # Listas de referência para os filtros
     MESES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
-    mes_atual = date.today().month
-    ano_atual = date.today().year
+    
+    # --- Lógica do Mês Anterior ---
+    hoje = date.today()
+    if hoje.month == 1:
+        mes_padrao = 12
+        ano_padrao = hoje.year - 1
+    else:
+        mes_padrao = hoje.month - 1
+        ano_padrao = hoje.year
+        
+    # Garante que o ano não quebre caso passe do limite estabelecido
+    indice_ano = ano_padrao - 2024
+    if indice_ano < 0: indice_ano = 0
+    if indice_ano > 6: indice_ano = 6 # (2030 - 2024 = 6)
 
     with st.form("login_form"):
         cpf_input = st.text_input("CPF:", help="Não precisa colocar pontos ou traços.").strip()
         dt_nasc_input = st.text_input("Data de Nascimento (DDMMAAAA):", help="Exemplo: Para 21/03/1991, digite 21031991", type="password").strip()
         
-        # Caixas de seleção para a competência
+        # Caixas de seleção já iniciam no mês e ano anteriores
         col_m, col_a = st.columns(2)
-        mes_input = col_m.selectbox("Mês Referência", MESES, index=mes_atual-1)
-        ano_input = col_a.selectbox("Ano Referência", range(2024, 2031), index=ano_atual-2024)
+        mes_input = col_m.selectbox("Mês Referência", MESES, index=mes_padrao-1)
+        ano_input = col_a.selectbox("Ano Referência", range(2026, 2036), index=indice_ano)
         
         submitted = st.form_submit_button("Consultar", use_container_width=True)
 
